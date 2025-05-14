@@ -31,6 +31,7 @@ interface ExtendedDatabase extends Database {
         Row: UserProfile;
         Insert: Omit<UserProfile, 'created_at'>;
         Update: Partial<UserProfile>;
+        Relationships: []; // Add this line to match the structure in types.ts
       };
       // Preserve existing empty tables structure
     };
