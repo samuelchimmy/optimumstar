@@ -33,12 +33,14 @@ const typedSupabase = createClient<Database>(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3eG1td29scmdyZ2N6aWlna2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxODkzNzYsImV4cCI6MjA2Mjc2NTM3Nn0.YG-ghxb1uX2IZo5kQJFMhtXMg8hTF2Z3pHU-s5LBsSE"
 );
 
+// Import the supabase client 
+import { supabase } from '@/integrations/supabase/client';
+
 // Fetch a user profile by ID with improved error handling and retry mechanism
 export async function getUserProfile(userId: string, retries = 2): Promise<UserProfile | null> {
   try {
     console.log('getUserProfile called for user ID:', userId);
     
-    // Use the imported supabase client to avoid duplicate instances
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
