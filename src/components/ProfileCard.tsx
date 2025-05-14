@@ -45,8 +45,8 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
               id: user.id,
               username: user.email?.split('@')[0] || 'User',
               avatar_url: '',
-              level: 1,
-              correct_answers: 0,
+              current_level: 1,
+              score: 0,
               created_at: new Date().toISOString(),
             };
             
@@ -133,7 +133,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
     );
   }
 
-  const levelProgress = ((profile.level || 1) - 1) / 5 * 100;
+  const levelProgress = ((profile.current_level || 1) - 1) / 5 * 100;
 
   return (
     <Card className="w-full max-w-md mx-auto border border-secondary/30 shadow-lg">
@@ -194,7 +194,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
           <div className="w-full space-y-2">
             <div className="flex justify-between text-sm">
               <span>Level Progress</span>
-              <span>{profile.level > 5 ? "Complete!" : `${profile.level || 0}/5`}</span>
+              <span>{profile.current_level > 5 ? "Complete!" : `${profile.current_level || 0}/5`}</span>
             </div>
             <Progress value={levelProgress} className="h-2" />
           </div>
@@ -202,11 +202,11 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
           <div className="flex justify-around w-full">
             <div className="text-center">
               <p className="text-sm text-gray-500">Current Level</p>
-              <p className="text-2xl font-bold text-primary">{profile.level > 5 ? "Max" : (profile.level || 0)}</p>
+              <p className="text-2xl font-bold text-primary">{profile.current_level > 5 ? "Max" : (profile.current_level || 0)}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Correct Answers</p>
-              <p className="text-2xl font-bold text-primary">{profile.correct_answers || 0}</p>
+              <p className="text-2xl font-bold text-primary">{profile.score || 0}</p>
             </div>
           </div>
           

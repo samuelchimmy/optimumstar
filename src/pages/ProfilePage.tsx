@@ -62,8 +62,8 @@ export default function ProfilePage() {
           id: user.id,
           username: user.email?.split('@')[0] || 'User',
           avatar_url: '',
-          level: 1,
-          correct_answers: 0,
+          current_level: 1,
+          score: 0,
           created_at: new Date().toISOString(),
         };
         

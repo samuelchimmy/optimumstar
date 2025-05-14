@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -77,7 +76,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const levelProgress = ((profile.level || 1) - 1) / 5 * 100;
+  const levelProgress = ((profile.current_level || 1) - 1) / 5 * 100;
 
   return (
     <Layout>
@@ -130,7 +129,7 @@ export default function UserProfilePage() {
               <div className="w-full space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Level Progress</span>
-                  <span>{(profile.level || 0) > 5 ? "Complete!" : `${profile.level || 0}/5`}</span>
+                  <span>{(profile.current_level || 0) > 5 ? "Complete!" : `${profile.current_level || 0}/5`}</span>
                 </div>
                 <Progress value={levelProgress} className="h-2" />
               </div>
@@ -138,11 +137,11 @@ export default function UserProfilePage() {
               <div className="flex justify-around w-full">
                 <div className="text-center">
                   <p className="text-sm text-gray-500">Current Level</p>
-                  <p className="text-2xl font-bold text-primary">{(profile.level || 0) > 5 ? "Max" : profile.level}</p>
+                  <p className="text-2xl font-bold text-primary">{(profile.current_level || 0) > 5 ? "Max" : profile.current_level}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-gray-500">Correct Answers</p>
-                  <p className="text-2xl font-bold text-primary">{profile.correct_answers || 0}</p>
+                  <p className="text-2xl font-bold text-primary">{profile.score || 0}</p>
                 </div>
               </div>
               
