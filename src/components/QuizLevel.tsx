@@ -56,11 +56,12 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       audio.volume = 0.5;
       audio.play().catch(e => console.log("Audio play error:", e));
       
-      // Update user progress in database with the current level score
-      if (user) {
-        await updateUserProgress(user.id, level + 1, correctAnswers);
-      }
+      // Pass the current level's score to the parent component
+      // The parent (QuizPage) will handle accumulating the scores
+      onComplete(level + 1, correctAnswers);
       
+      // The database update will be handled in QuizPage.tsx, which has the complete
+      // accumulated score for all levels
       toast({
         title: "Level Completed! 🎉",
         description: `You scored ${correctAnswers} out of 10 on this level!`,
