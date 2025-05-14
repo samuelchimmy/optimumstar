@@ -38,28 +38,29 @@ export default function LeaderboardTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leaderboard.map((player, index) => (
-            <TableRow key={player.id} className={index < 3 ? "bg-primary/5" : ""}>
-              <TableCell className="font-medium text-center">
-                {index + 1}
-                {index === 0 && " 🏆"}
-                {index === 1 && " 🥈"}
-                {index === 2 && " 🥉"}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={player.avatar_url} alt={player.username} />
-                    <AvatarFallback>{player.username.slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <span>{player.username}</span>
-                </div>
-              </TableCell>
-              <TableCell>{player.level}</TableCell>
-              <TableCell className="text-right">{player.correct_answers}</TableCell>
-            </TableRow>
-          ))}
-          {leaderboard.length === 0 && (
+          {leaderboard && leaderboard.length > 0 ? (
+            leaderboard.map((player, index) => (
+              <TableRow key={player.id} className={index < 3 ? "bg-primary/5" : ""}>
+                <TableCell className="font-medium text-center">
+                  {index + 1}
+                  {index === 0 && " 🏆"}
+                  {index === 1 && " 🥈"}
+                  {index === 2 && " 🥉"}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={player.avatar_url} alt={player.username} />
+                      <AvatarFallback>{player.username && typeof player.username === 'string' ? player.username.slice(0, 2) : '??'}</AvatarFallback>
+                    </Avatar>
+                    <span>{player.username}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{player.level}</TableCell>
+                <TableCell className="text-right">{player.correct_answers}</TableCell>
+              </TableRow>
+            ))
+          ) : (
             <TableRow>
               <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                 No players on the leaderboard yet. Be the first!
