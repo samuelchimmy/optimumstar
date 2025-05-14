@@ -76,6 +76,7 @@ export default function QuizPage() {
       
       // Update the final score in the database
       if (user) {
+        console.log('Quiz completed - sending final total score to database:', newTotalScore);
         updateUserProgress(user.id, nextLevel, newTotalScore);
         
         // Show a toast confirmation
@@ -89,6 +90,12 @@ export default function QuizPage() {
       // Continue to next level
       setCurrentLevel(nextLevel);
       setIsStarted(true);
+      
+      // Also update the progressive score in the database
+      if (user) {
+        console.log('Level completed - updating progressive score in database:', newTotalScore);
+        updateUserProgress(user.id, nextLevel, newTotalScore);
+      }
     }
   };
   

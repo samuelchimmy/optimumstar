@@ -157,7 +157,10 @@ export default function LeaderboardTable({ currentUserId = null }: LeaderboardTa
                   </div>
                 </TableCell>
                 <TableCell>{player.level}</TableCell>
-                <TableCell className="text-right">{player.correct_answers}</TableCell>
+                <TableCell className="text-right">
+                  <span className="font-medium">{player.correct_answers || 0}</span>
+                  <span className="text-muted-foreground text-sm ml-1">/50</span>
+                </TableCell>
               </TableRow>
             ))
           ) : (
