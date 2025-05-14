@@ -8,13 +8,13 @@ export { supabase } from '@/integrations/supabase/client';
 // These will be used instead of the generated types which are currently empty
 export interface UserProfile {
   id: string;
-  username: string;
-  avatar_url: string;
-  level: number;
-  correct_answers: number;
-  created_at: string;
-  discord_username?: string;
-  twitter_username?: string;
+  username: string | null;
+  avatar_url: string | null;
+  level: number | null;
+  correct_answers: number | null;
+  created_at: string | null;
+  discord_username?: string | null;
+  twitter_username?: string | null;
 }
 
 export interface QuizQuestion {
@@ -25,27 +25,8 @@ export interface QuizQuestion {
   level: number;
 }
 
-// Extended Database type with our custom tables
-interface ExtendedDatabase extends Database {
-  public: {
-    Tables: {
-      profiles: {
-        Row: UserProfile;
-        Insert: Omit<UserProfile, 'created_at'>;
-        Update: Partial<UserProfile>;
-        Relationships: []; // Add this line to match the structure in types.ts
-      };
-      // Preserve existing empty tables structure
-    };
-    Views: Database['public']['Views'];
-    Functions: Database['public']['Functions'];
-    Enums: Database['public']['Enums'];
-    CompositeTypes: Database['public']['CompositeTypes'];
-  };
-}
-
 // Create a typed client
-const typedSupabase = createClient<ExtendedDatabase>(
+const typedSupabase = createClient<Database>(
   "https://wwxmmwolrgrgcziigkil.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3eG1td29scmdyZ2N6aWlna2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxODkzNzYsImV4cCI6MjA2Mjc2NTM3Nn0.YG-ghxb1uX2IZo5kQJFMhtXMg8hTF2Z3pHU-s5LBsSE"
 );

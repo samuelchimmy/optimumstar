@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Twitter, Discord } from 'lucide-react';
+import { Twitter, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserProfile, UserProfile } from '../lib/supabase';
 
@@ -104,7 +104,7 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
             
             {profile.discord_username && (
               <div className="flex items-center space-x-1 text-indigo-500">
-                <Discord size={20} />
+                <MessageSquare size={20} />
                 <span className="text-sm font-medium">
                   {profile.discord_username}
                 </span>

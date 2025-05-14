@@ -1,15 +1,18 @@
-
 import * as React from "react"
 import {
   Toast,
   ToastActionElement,
-  ToastProps as ToastPrimitiveProps
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToastProps = Omit<ToastPrimitiveProps, "id">
+type ToastProps = {
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+}
 
 type ToasterToast = {
   id: string
@@ -18,7 +21,9 @@ type ToasterToast = {
   action?: ToastActionElement
   open: boolean
   onOpenChange: (open: boolean) => void
-} & ToastProps
+  variant?: "default" | "destructive"
+  duration?: number
+}
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -142,22 +147,20 @@ function dispatch(action: Action) {
   })
 }
 
-type ToastOptions = {
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-  variant?: "default" | "destructive"
-  duration?: number
+interface Toast {
+  id: string
+  dismiss: () => void
+  update: (props: ToastProps) => void
 }
 
-function toast(props: ToastOptions) {
+function toast(props: ToastProps): Toast {
   const id = genId()
 
-  const update = (props: ToastOptions) =>
+  const update = (props: ToastProps) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
-    } as any)
+    })
   
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
@@ -170,7 +173,7 @@ function toast(props: ToastOptions) {
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
-    } as any,
+    },
   })
 
   return {
