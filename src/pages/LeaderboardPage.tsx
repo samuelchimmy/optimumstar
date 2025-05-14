@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserRanking } from '../lib/supabase';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
