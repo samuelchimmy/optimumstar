@@ -52,10 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithDiscord = async () => {
     try {
+      // Use redirectTo instead of embedded iframe
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}`,
+          skipBrowserRedirect: false // This ensures the browser will redirect to Discord
         }
       });
       
