@@ -29,7 +29,7 @@ export default function ProfilePage() {
           let userProfile = await fetchUserProfile(user.id);
           console.log('Profile data received:', userProfile);
           
-          // If profile not found, attempt to create a default profile
+          // If profile not found, create a default profile
           if (!userProfile) {
             console.log('Profile not found, creating default profile for user:', user.id);
             const defaultProfile: UserProfile = {
@@ -41,8 +41,21 @@ export default function ProfilePage() {
               created_at: new Date().toISOString(),
             };
             
-            userProfile = await createUserProfile(defaultProfile);
-            console.log('Default profile created:', userProfile);
+            try {
+              userProfile = await createUserProfile(defaultProfile);
+              console.log('Default profile created:', userProfile);
+              
+              // If creation failed, try fetching again as it might have been created in another component
+              if (!userProfile) {
+                console.log('Retrying profile fetch after creation attempt');
+                userProfile = await fetchUserProfile(user.id);
+                console.log('Retry fetch result:', userProfile);
+              }
+            } catch (createError) {
+              console.error('Error creating profile:', createError);
+              // Try fetching one more time in case it was created elsewhere
+              userProfile = await fetchUserProfile(user.id);
+            }
           }
           
           if (userProfile) {

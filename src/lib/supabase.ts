@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -34,6 +35,7 @@ const typedSupabase = createClient<Database>(
 // Fetch a user profile by ID
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
+    console.log('getUserProfile called for user ID:', userId);
     const { data, error } = await typedSupabase
       .from('profiles')
       .select('*')
@@ -45,6 +47,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       return null;
     }
     
+    console.log('getUserProfile result:', data);
     return data;
   } catch (error) {
     console.error('getUserProfile error:', error);
@@ -58,37 +61,72 @@ export const fetchUserProfile = getUserProfile;
 // Create a new user profile
 export async function createUserProfile(profile: UserProfile): Promise<UserProfile | null> {
   try {
-    // Check if profile already exists
+    console.log('createUserProfile called with:', profile);
+    
+    // Double check if profile already exists to prevent duplication errors
     const { data: existingProfile } = await typedSupabase
       .from('profiles')
       .select('*')
       .eq('id', profile.id)
-      .single();
+      .maybeSingle();
     
     if (existingProfile) {
+      console.log('Profile already exists, returning existing:', existingProfile);
       return existingProfile;
     }
     
+    // Create new profile
     const { data, error } = await typedSupabase
       .from('profiles')
       .insert([{
         id: profile.id,
         username: profile.username,
         avatar_url: profile.avatar_url,
-        level: profile.level,
-        correct_answers: profile.correct_answers
+        level: profile.level || 1,
+        correct_answers: profile.correct_answers || 0,
+        created_at: profile.created_at || new Date().toISOString()
       }])
-      .select()
-      .single();
+      .select();
     
     if (error) {
       console.error('Error creating user profile:', error);
+      
+      // If error happens, try to fetch one more time in case it was created in parallel
+      const { data: doubleCheckProfile } = await typedSupabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profile.id)
+        .maybeSingle();
+      
+      if (doubleCheckProfile) {
+        console.log('Found profile after creation error:', doubleCheckProfile);
+        return doubleCheckProfile;
+      }
+      
       return null;
     }
     
-    return data;
+    console.log('Profile created successfully:', data);
+    return data?.[0] || null;
   } catch (error) {
     console.error('createUserProfile error:', error);
+    
+    // Even for unexpected errors, check if profile exists
+    try {
+      const { data: fallbackProfile } = await typedSupabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profile.id)
+        .maybeSingle();
+      
+      if (fallbackProfile) {
+        console.log('Found profile in error fallback:', fallbackProfile);
+        return fallbackProfile;
+      }
+    } catch (fallbackError) {
+      console.error('Error in fallback profile check:', fallbackError);
+    }
+    
     return null;
   }
 }

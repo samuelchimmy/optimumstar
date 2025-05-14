@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Twitter, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserProfile, createUserProfile, UserProfile } from '../lib/supabase';
+import { toast } from '@/hooks/use-toast';
 
 interface ProfileCardProps {
   onEdit?: () => void;
@@ -20,6 +21,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
   const [profileLoading, setProfileLoading] = useState(loading);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 2;
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -31,7 +33,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
         console.log('ProfileCard: Profile data received:', userProfile);
         
         // If profile not found, attempt to create a default profile
-        if (!userProfile && retryCount < 1) {
+        if (!userProfile && retryCount < maxRetries) {
           console.log('ProfileCard: No profile found, creating default profile for user:', user.id);
           const defaultProfile: UserProfile = {
             id: user.id,
@@ -42,17 +44,39 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
             created_at: new Date().toISOString(),
           };
           
-          userProfile = await createUserProfile(defaultProfile);
-          console.log('ProfileCard: Default profile created:', userProfile);
+          try {
+            userProfile = await createUserProfile(defaultProfile);
+            console.log('ProfileCard: Default profile created:', userProfile);
+            
+            // If creation didn't return a profile, try fetching it again
+            if (!userProfile) {
+              console.log('ProfileCard: Trying to fetch profile after creation attempt');
+              userProfile = await fetchUserProfile(user.id);
+            }
+          } catch (createError) {
+            console.error('ProfileCard: Error creating profile:', createError);
+            // Try fetching one more time
+            userProfile = await fetchUserProfile(user.id);
+          }
+          
           setRetryCount(retryCount + 1);
         }
         
         if (userProfile) {
           setProfile(userProfile);
           setError(false);
+          console.log('ProfileCard: Successfully loaded profile:', userProfile);
         } else {
-          console.error('ProfileCard: Failed to load or create profile');
+          console.error('ProfileCard: Failed to load or create profile after attempts');
           setError(true);
+          
+          if (retryCount >= maxRetries) {
+            toast({
+              title: "Profile Error",
+              description: "Could not load your profile after multiple attempts. Please try logging out and back in.",
+              variant: "destructive"
+            });
+          }
         }
       } catch (err) {
         console.error('ProfileCard: Error fetching user profile:', err);
@@ -99,6 +123,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
               onClick={() => {
                 setProfileLoading(true);
                 setRetryCount(0);
+                setError(false);
                 setTimeout(() => window.location.reload(), 500);
               }}
             >
