@@ -1,19 +1,24 @@
 
-// This file is a simple re-export of the toast components
-import { toast } from "@/components/ui/toast"
 import * as React from "react"
-
-type ToastProps = React.ComponentPropsWithoutRef<typeof toast>
+import {
+  Toast,
+  ToastActionElement,
+  ToastProps as ToastPrimitiveProps
+} from "@/components/ui/toast"
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToast = ToastProps & {
+type ToastProps = Omit<ToastPrimitiveProps, "id">
+
+type ToasterToast = {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
-  action?: React.ReactNode
-}
+  action?: ToastActionElement
+  open: boolean
+  onOpenChange: (open: boolean) => void
+} & ToastProps
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -137,16 +142,23 @@ function dispatch(action: Action) {
   })
 }
 
-interface Toast extends Omit<ToasterToast, "id"> {}
+type ToastOptions = {
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+  duration?: number
+}
 
-function toast({ ...props }: Toast) {
+function toast(props: ToastOptions) {
   const id = genId()
 
-  const update = (props: ToasterToast) =>
+  const update = (props: ToastOptions) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
-    })
+    } as any)
+  
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
   dispatch({
@@ -158,7 +170,7 @@ function toast({ ...props }: Toast) {
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
-    },
+    } as any,
   })
 
   return {
