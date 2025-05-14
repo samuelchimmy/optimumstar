@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import QuizPage from "./pages/QuizPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import UserProfilePage from "./pages/UserProfilePage";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
 
@@ -30,6 +31,7 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/quiz" element={<QuizPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/user/:userId" element={<UserProfilePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

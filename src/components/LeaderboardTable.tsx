@@ -1,12 +1,16 @@
 
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LeaderboardTable() {
   const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -17,6 +21,17 @@ export default function LeaderboardTable() {
     
     loadLeaderboard();
   }, []);
+
+  const handleProfileClick = (playerId: string) => {
+    if (!user) {
+      // If not logged in, redirect to login
+      navigate('/login');
+      return;
+    }
+    
+    // Navigate to user profile
+    navigate(`/user/${playerId}`);
+  };
 
   if (loading) {
     return (
@@ -40,7 +55,13 @@ export default function LeaderboardTable() {
         <TableBody>
           {leaderboard && leaderboard.length > 0 ? (
             leaderboard.map((player, index) => (
-              <TableRow key={player.id} className={index < 3 ? "bg-primary/5" : ""}>
+              <TableRow 
+                key={player.id} 
+                className={index < 3 ? "bg-primary/5" : ""}
+                onClick={() => handleProfileClick(player.id)}
+                role="button"
+                style={{ cursor: 'pointer' }}
+              >
                 <TableCell className="font-medium text-center">
                   {index + 1}
                   {index === 0 && " 🏆"}
@@ -50,10 +71,10 @@ export default function LeaderboardTable() {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={player.avatar_url} alt={player.username} />
+                      <AvatarImage src={player.avatar_url || ''} alt={player.username || ''} />
                       <AvatarFallback>{player.username && typeof player.username === 'string' ? player.username.slice(0, 2) : '??'}</AvatarFallback>
                     </Avatar>
-                    <span>{player.username}</span>
+                    <span className="hover:underline">{player.username}</span>
                   </div>
                 </TableCell>
                 <TableCell>{player.level}</TableCell>
