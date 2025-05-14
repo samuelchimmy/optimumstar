@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
-import { Trophy } from 'lucide-react';
+import { Trophy, Clock } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { 
   Table,
@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { format } from 'date-fns';
 
 interface LeaderboardTableProps {
   currentUserId: string | null;
@@ -33,8 +34,8 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
         console.log('Leaderboard data fetched:', data);
         console.log('Scores:', data.map(user => ({ 
           username: user.username, 
-          score: user.correct_answers,
-          level: user.level,
+          score: user.score,
+          current_level: user.current_level,
           completed: user.quiz_completed
         })));
         
@@ -90,13 +91,14 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
             <TableHead>Player</TableHead>
             <TableHead className="text-right">Score (out of 50)</TableHead>
             <TableHead className="text-right">Status</TableHead>
+            <TableHead className="text-right">Completed At</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {leaderboardData.map((user, index) => {
             const isCurrentUser = user.id === currentUserId;
-            // Ensure we're using the correct score
-            const score = user.correct_answers || 0;
+            // Ensure we're using the correct score field
+            const score = user.score || 0;
             const isCompleted = user.quiz_completed;
             
             return (
@@ -115,6 +117,7 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
                 <TableCell className="font-semibold">
                   {user.username || 'Anonymous'}
                   {isCurrentUser && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>}
+                  {isCompleted && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">All levels completed!</span>}
                 </TableCell>
                 <TableCell className="text-right font-mono">
                   {score}<span className="text-muted-foreground text-xs">/50</span>
@@ -124,7 +127,15 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Completed</span>
                   ) : (
                     <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                      Level {user.level || 1}
+                      Level {user.current_level || 1}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right text-xs text-muted-foreground">
+                  {user.last_completed_at && (
+                    <span className="flex items-center justify-end gap-1">
+                      <Clock className="h-3 w-3" />
+                      {format(new Date(user.last_completed_at), 'MMM d, yyyy')}
                     </span>
                   )}
                 </TableCell>

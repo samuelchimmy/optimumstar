@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,21 +38,21 @@ export default function QuizPage() {
           setQuizAlreadyCompleted(true);
         }
         
-        setCurrentLevel(profile.level > 5 ? 5 : profile.level);
+        setCurrentLevel(profile.current_level > 5 ? 5 : profile.current_level);
         
-        // Set correct_answers as the total score if available
-        if (profile.correct_answers) {
-          setTotalScore(profile.correct_answers);
+        // Set score as the total score if available
+        if (profile.score) {
+          setTotalScore(profile.score);
         }
         
         // Recreate level scores from the database if possible
         // Note: This is an approximation since we don't store individual level scores
-        if (profile.level && profile.level > 1) {
+        if (profile.current_level && profile.current_level > 1) {
           const newLevelScores = [...levelScores];
-          const averageScore = profile.correct_answers ? Math.floor(profile.correct_answers / (profile.level - 1)) : 0;
+          const averageScore = profile.score ? Math.floor(profile.score / (profile.current_level - 1)) : 0;
           
           // Fill completed levels with the average score as an approximation
-          for (let i = 0; i < profile.level - 1; i++) {
+          for (let i = 0; i < profile.current_level - 1; i++) {
             newLevelScores[i] = averageScore;
           }
           
@@ -74,8 +75,8 @@ export default function QuizPage() {
     setIsStarted(true);
   };
   
-  const handleLevelComplete = (nextLevel: number, score: number) => {
-    console.log(`Level ${currentLevel} completed with score: ${score}/10`);
+  const handleLevelComplete = (levelCompleted: number, score: number, isPerfectScore: boolean) => {
+    console.log(`Level ${currentLevel} completed with score: ${score}/10, Perfect score: ${isPerfectScore}`);
     
     // Store the score for this level
     const updatedScores = [...levelScores];
@@ -88,14 +89,21 @@ export default function QuizPage() {
     console.log(`New total score: ${newTotalScore}/50 (sum of all levels)`);
     setTotalScore(newTotalScore);
     
+    // Only allow advancing to next level if user got a perfect score (10/10)
+    if (!isPerfectScore) {
+      console.log("Level not passed with a perfect score. Must try again.");
+      // The retry button is handled in the QuizLevel component
+      return;
+    }
+    
     // Check if we've completed all levels
-    if (nextLevel > 5) {
+    if (levelCompleted > 5) {
       setQuizCompleted(true);
       
-      // Update the final score in the database
+      // Update the final score in the database with completion timestamp
       if (user) {
         console.log('Quiz completed - sending final total score to database:', newTotalScore);
-        updateUserProgress(user.id, nextLevel, newTotalScore);
+        updateUserProgress(user.id, levelCompleted, newTotalScore, true);
         
         // Show a toast confirmation
         toast({
@@ -105,14 +113,14 @@ export default function QuizPage() {
         });
       }
     } else {
-      // Continue to next level
-      setCurrentLevel(nextLevel);
+      // Continue to next level (only if perfect score was achieved)
+      setCurrentLevel(levelCompleted);
       setIsStarted(true);
       
       // Also update the progressive score in the database
       if (user) {
         console.log(`Level ${currentLevel} completed - updating progressive score in database:`, newTotalScore);
-        updateUserProgress(user.id, nextLevel, newTotalScore);
+        updateUserProgress(user.id, levelCompleted, newTotalScore, false);
       }
     }
   };
@@ -187,7 +195,7 @@ export default function QuizPage() {
               
               <div className="text-xl mt-4">
                 {totalScore >= 45 && (
-                  <p className="text-green-600">Outstanding! You're a blockchain genius! ����</p>
+                  <p className="text-green-600">Outstanding! You're a blockchain genius! 🧠✨</p>
                 )}
                 {totalScore >= 30 && totalScore < 45 && (
                   <p className="text-primary">Great job! You know your Succinct stuff! 🌟</p>
@@ -231,6 +239,7 @@ export default function QuizPage() {
             <p className="text-lg mb-8">
               Answer all 10 questions in each level to test your knowledge.
               There are 5 levels with 10 questions each, for a total of 50 points.
+              You must get all 10 questions correct to advance to the next level!
             </p>
             
             <Button 

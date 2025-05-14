@@ -10,7 +10,7 @@ import { Trophy, Star } from 'lucide-react';
 
 interface QuizLevelProps {
   level: number;
-  onComplete: (level: number, score: number) => void;
+  onComplete: (level: number, score: number, isPerfectScore: boolean) => void;
 }
 
 export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
@@ -64,12 +64,16 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       audio.volume = 0.5;
       audio.play().catch(e => console.log("Audio play error:", e));
       
+      // Check if user got a perfect score (10/10)
+      const isPerfectScore = finalScore === 10;
+      
       // Pass the current level's score to the parent component
-      onComplete(level + 1, finalScore);
+      onComplete(level, finalScore, isPerfectScore);
       
       toast({
-        title: "Level Completed! 🎉",
-        description: `You scored ${finalScore} out of 10 on this level!`,
+        title: isPerfectScore ? "Perfect Score! 🎉" : "Level Completed",
+        description: `You scored ${finalScore} out of 10 on this level!${!isPerfectScore ? ' You need all 10 correct to advance.' : ''}`,
+        variant: isPerfectScore ? "default" : "destructive"
       });
     }
   };
@@ -85,6 +89,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   if (completed) {
     // Calculate final score correctly
     const finalLevelScore = correctAnswers;
+    const isPerfectScore = finalLevelScore === 10;
     
     return (
       <div className="text-center">
@@ -95,23 +100,35 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
         </h2>
         <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{finalLevelScore} / 10</span></p>
         
-        {level < 5 ? (
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
-            onClick={() => onComplete(level + 1, finalLevelScore)}
-          >
-            Continue to Level {level + 1}
-          </Button>
+        {isPerfectScore ? (
+          level < 5 ? (
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
+              onClick={() => onComplete(level + 1, finalLevelScore, true)}
+            >
+              Continue to Level {level + 1}
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
+                <Star className="h-6 w-6" /> You've completed all levels! 🎵🥳
+              </p>
+              <Button 
+                className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
+                onClick={() => onComplete(level + 1, finalLevelScore, true)}
+              >
+                See Your Final Score
+              </Button>
+            </div>
+          )
         ) : (
           <div className="space-y-4">
-            <p className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
-              <Star className="h-6 w-6" /> You've completed all levels! 🎵🥳
-            </p>
+            <p className="text-lg text-amber-600">You need all 10 questions correct to advance to the next level.</p>
             <Button 
-              className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
-              onClick={() => onComplete(level + 1, finalLevelScore)}
+              className="bg-amber-500 hover:bg-amber-600 text-white text-lg px-8 py-6"
+              onClick={() => navigate(0)}
             >
-              See Your Final Score
+              Try Level {level} Again
             </Button>
           </div>
         )}

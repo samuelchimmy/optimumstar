@@ -12,34 +12,37 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          correct_answers: number | null
           created_at: string | null
+          current_level: number | null
           discord_username: string | null
           id: string
-          level: number | null
+          last_completed_at: string | null
           quiz_completed: boolean | null
+          score: number | null
           twitter_username: string | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
-          correct_answers?: number | null
           created_at?: string | null
+          current_level?: number | null
           discord_username?: string | null
           id: string
-          level?: number | null
+          last_completed_at?: string | null
           quiz_completed?: boolean | null
+          score?: number | null
           twitter_username?: string | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
-          correct_answers?: number | null
           created_at?: string | null
+          current_level?: number | null
           discord_username?: string | null
           id?: string
-          level?: number | null
+          last_completed_at?: string | null
           quiz_completed?: boolean | null
+          score?: number | null
           twitter_username?: string | null
           username?: string | null
         }

@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -11,12 +12,13 @@ export interface UserProfile {
   id: string;
   username: string | null;
   avatar_url: string | null;
-  level: number | null;
-  correct_answers: number | null;
+  current_level: number | null;
+  score: number | null;
   created_at: string | null;
   discord_username?: string | null;
   twitter_username?: string | null;
   quiz_completed?: boolean | null;
+  last_completed_at?: string | null;
 }
 
 export interface QuizQuestion {
@@ -99,10 +101,11 @@ async function createProfileAndFetch(userId: string, retriesLeft: number): Promi
       id: userId,
       username: username,
       avatar_url: '',
-      level: 1,
-      correct_answers: 0,
+      current_level: 1,
+      score: 0,
       created_at: new Date().toISOString(),
       quiz_completed: false,
+      last_completed_at: new Date().toISOString(),
     };
     
     console.log('Creating default profile:', defaultProfile);
@@ -183,10 +186,11 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         id: profile.id,
         username: profile.username || 'User',
         avatar_url: profile.avatar_url || '',
-        level: profile.level || 1,
-        correct_answers: profile.correct_answers || 0,
+        current_level: profile.current_level || 1,
+        score: profile.score || 0,
         created_at: profile.created_at || new Date().toISOString(),
         quiz_completed: profile.quiz_completed || false,
+        last_completed_at: profile.last_completed_at || new Date().toISOString(),
       }], {
         onConflict: 'id',
         ignoreDuplicates: false
@@ -265,12 +269,13 @@ export async function updateUserProfile(
         id: userId,
         username: profileData.username || 'User',
         avatar_url: profileData.avatar_url || '',
-        level: profileData.level || 1,
-        correct_answers: profileData.correct_answers || 0,
+        current_level: profileData.current_level || 1,
+        score: profileData.score || 0,
         created_at: new Date().toISOString(),
         discord_username: profileData.discord_username,
         twitter_username: profileData.twitter_username,
         quiz_completed: profileData.quiz_completed || false,
+        last_completed_at: profileData.last_completed_at || new Date().toISOString(),
       };
       
       return createUserProfile(defaultProfile);
@@ -297,11 +302,12 @@ export async function updateUserProfile(
   }
 }
 
-// Update user progress with accumulated scores
+// Update user progress with accumulated scores and completion timestamp
 export async function updateUserProgress(
   userId: string, 
   level: number, 
-  correctAnswers: number
+  correctAnswers: number,
+  isCompleted: boolean
 ): Promise<boolean> {
   try {
     if (!userId) {
@@ -313,11 +319,12 @@ export async function updateUserProgress(
     console.log(`User ID: ${userId}`);
     console.log(`New Level: ${level}`);
     console.log(`Total Accumulated Score: ${correctAnswers}/50`);
+    console.log(`Quiz Completed: ${isCompleted}`);
     
     // Get current profile to correctly update total score
     const { data: existingProfile } = await supabase
       .from('profiles')
-      .select('level, correct_answers, quiz_completed')
+      .select('current_level, score, quiz_completed')
       .eq('id', userId)
       .maybeSingle();
     
@@ -327,8 +334,8 @@ export async function updateUserProgress(
     }
     
     console.log('Current profile state:', {
-      currentLevel: existingProfile.level,
-      currentScore: existingProfile.correct_answers,
+      currentLevel: existingProfile.current_level,
+      currentScore: existingProfile.score,
       completed: existingProfile.quiz_completed
     });
     
@@ -338,18 +345,19 @@ export async function updateUserProgress(
       return true;
     }
     
-    const updates: any = { level };
+    const updates: any = { 
+      current_level: level,
+      score: correctAnswers,
+      last_completed_at: new Date().toISOString() 
+    };
     
-    // For final level completion (level > 5), set the total score and mark quiz as completed
-    if (level > 5) {
+    // For final level completion (level > 5), mark quiz as completed
+    if (isCompleted || level > 5) {
       // This is the total accumulated score from all levels (out of 50)
       console.log(`QUIZ COMPLETED - Setting final total score: ${correctAnswers}/50`);
-      updates.correct_answers = correctAnswers;
       updates.quiz_completed = true;
     } else {
       // For level progress (not completing the entire quiz),
-      // correctAnswers parameter is the accumulated total from all completed levels so far
-      updates.correct_answers = correctAnswers;
       console.log(`Level progress - Setting accumulated score to: ${correctAnswers}/50`);
     }
     
@@ -374,13 +382,14 @@ export async function updateUserProgress(
   }
 }
 
-// Fetch leaderboard data with improved error handling
+// Fetch leaderboard data with improved error handling and ordering by score and completion time
 export async function getLeaderboard(): Promise<UserProfile[]> {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .order('correct_answers', { ascending: false })
+      .order('score', { ascending: false })
+      .order('last_completed_at', { ascending: true }) // For tie-breaking - earliest completion time wins
       .limit(10);
     
     if (error) {
@@ -410,7 +419,8 @@ export async function getUserRanking(userId: string): Promise<number> {
     const { data, error } = await supabase
       .from('profiles')
       .select('id')
-      .order('correct_answers', { ascending: false });
+      .order('score', { ascending: false })
+      .order('last_completed_at', { ascending: true }); // For tie-breaking - earliest completion time wins
     
     if (error || !data) {
       console.error('Error fetching user ranking:', error);
