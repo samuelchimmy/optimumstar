@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
+````markdown
+# 🚀 Succinct Quiz App
 
-## Project info
+A sleek, multi-level quiz application designed to test your knowledge of the Succinct Network whitepaper. Built with ❤️ by [Jadeofwallstreet](https://x.com/MetisCharter).
 
-**URL**: https://lovable.dev/projects/7fb18672-19e4-450e-80d5-9b67a07cb0b2
+---
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- 🔐 Supabase Auth (with Google/Discord login)
+- 🧠 5 quiz levels with 10 questions each, increasing in difficulty
+- ✅ Real-time answer checking and progress tracking
+- 🏆 Public leaderboard showing top quiz scorers
+- 🎉 Fun and humorous UX flow with congratulatory music
+- 🌗 Light/Dark mode with a custom color palette:
+  - `#fe11c5` (Pink)
+  - `#8bcbe8` (Sky Blue)
+  - `#000000` (Black)
+  - `#f9f9f9` (White)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7fb18672-19e4-450e-80d5-9b67a07cb0b2) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **React (TypeScript)**
+- **Supabase (Auth + Database)**
+- **TailwindCSS** for styling
+- **Custom routing and state management**
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📦 Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/succinct-quiz-app.git
+cd succinct-quiz-app
+````
 
-Follow these steps:
+### 2. Install dependencies
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. Setup Environment Variables
 
-# Step 3: Install the necessary dependencies.
-npm i
+Create a `.env.local` file with the following:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```env
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Get these from your [Supabase dashboard](https://app.supabase.com/).
+
+---
+
+### 4. Run the development server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🧪 Quiz Content
 
-**Use GitHub Codespaces**
+The quiz pulls from a custom database of simplified questions extracted from the [Succinct whitepaper](https://docs.succinct.xyz/docs/network/whitepapers), rewritten with humor and clarity.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+All correct answers are tracked in the database and user scores update automatically.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 🧠 How It Works
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+* Users authenticate with Supabase (Discord or Google)
+* Questions load dynamically per level
+* Answer checking is done client-side against stored correct answers
+* Level progress and scores are stored in Supabase
+* Leaderboard ranks users by total correct answers
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/7fb18672-19e4-450e-80d5-9b67a07cb0b2) and click on Share -> Publish.
+## 📸 Screenshots
 
-## Can I connect a custom domain to my Lovable project?
+*Coming soon*
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 👤 Built By
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Jadeofwallstreet**
+Follow on X: [@MetisCharter](https://x.com/MetisCharter)
+
+---
+
+## 📄 License
+
+MIT License. Use it, remix it, just don’t forget to credit. 😉
+
+
