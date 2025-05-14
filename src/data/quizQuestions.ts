@@ -26,9 +26,9 @@ export const quizQuestions: QuizQuestion[] = [
     level: 1,
     question: "Succinct uses what unique mechanism to assign proof requests?",
     options: [
-      "Rock-paper-blockchain",
-      "Proof contests",
       "Random tweet selector",
+      "Proof contests",
+      "Rock-paper-blockchain",
       "Vitalik's coin toss"
     ],
     correct_answer: 1
@@ -38,10 +38,10 @@ export const quizQuestions: QuizQuestion[] = [
     level: 1,
     question: "How does Succinct discourage malicious provers?",
     options: [
-      "Public shaming on Discord",
+      "Crypto jail",
       "Collateral staking",
-      "Forced meme creation",
-      "Crypto jail"
+      "Public shaming on Discord",
+      "Forced meme creation"
     ],
     correct_answer: 1
   },
@@ -50,12 +50,12 @@ export const quizQuestions: QuizQuestion[] = [
     level: 1,
     question: "SP1 in Succinct stands for what?",
     options: [
-      "Succinct Party 1",
-      "Succinct Proof 1",
+      "Sushi Party 1",
       "Super Protocol 1",
-      "Sushi Party 1"
+      "Succinct Proof 1",
+      "Succinct Party 1"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 5,
@@ -63,9 +63,9 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Succinct provides proofs for what type of programs?",
     options: [
       "JavaScript web apps",
-      "Python scripts",
+      "Crypto meme generators",
       "Deterministic Rust programs",
-      "Crypto meme generators"
+      "Python scripts"
     ],
     correct_answer: 2
   },
@@ -74,45 +74,45 @@ export const quizQuestions: QuizQuestion[] = [
     level: 1,
     question: "Proof uniqueness in Succinct is guaranteed by?",
     options: [
-      "Special blockchain sauce",
-      "Unique nonce & prover addresses",
       "NFT authenticity certificates",
-      "User pinky promises"
+      "User pinky promises",
+      "Unique nonce & prover addresses",
+      "Special blockchain sauce"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 7,
     level: 1,
     question: "If provers miss a deadline, they lose what?",
     options: [
+      "Twitter verification badge",
       "Crypto dignity",
-      "Collateral stake",
       "NFT collection",
-      "Twitter verification badge"
+      "Collateral stake"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 8,
     level: 1,
     question: "Succinct's contest mechanism combats which common blockchain issue?",
     options: [
-      "Too much coffee",
-      "Nothing-at-stake problem",
       "Gas fee fatigue",
-      "Crypto procrastination"
+      "Crypto procrastination",
+      "Nothing-at-stake problem",
+      "Too much coffee"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 9,
     level: 1,
     question: "Which of these is NOT a proof type in Succinct?",
     options: [
+      "CORE",
       "GROTH16",
       "COMPRESSED",
-      "CORE",
       "DOGE-PROOF"
     ],
     correct_answer: 3
@@ -123,11 +123,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "What entity coordinates users and provers in Succinct?",
     options: [
       "Ethereum Foundation",
+      "A smart blockchain cat",
       "An application-specific blockchain",
-      "Binance's CEO",
-      "A smart blockchain cat"
+      "Binance's CEO"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   
   // Level 2: Proof Contests & Bidding
@@ -137,23 +137,23 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Why do provers bid on proofs?",
     options: [
       "Auction addiction",
-      "To fairly allocate proof generation",
+      "To please Elon Musk",
       "For blockchain fame",
-      "To please Elon Musk"
+      "To fairly allocate proof generation"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 12,
     level: 2,
     question: "What happens when you bid highest?",
     options: [
-      "Immediate NFT drop",
-      "Assigned to generate proof with higher chance",
+      "Free Ethereum socks",
       "Vitalik congratulates you",
-      "Free Ethereum socks"
+      "Assigned to generate proof with higher chance",
+      "Immediate NFT drop"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 13,
@@ -172,10 +172,10 @@ export const quizQuestions: QuizQuestion[] = [
     level: 2,
     question: "What parameter influences proof assignment probability in Succinct?",
     options: [
-      "Coffee consumed",
+      "Gas fees spent",
       "Alpha (α) parameter",
-      "Meme quality",
-      "Gas fees spent"
+      "Coffee consumed",
+      "Meme quality"
     ],
     correct_answer: 1
   },
@@ -185,11 +185,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "The \"Execute()\" function primarily does what?",
     options: [
       "Executes bad provers",
-      "Handles payments & collateral logic",
       "Orders pizza",
+      "Handles payments & collateral logic",
       "Sends Vitalik memes"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 16,
@@ -197,21 +197,21 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Provers reserve future proof slots by?",
     options: [
       "Sending love letters to the blockchain",
+      "Minting NFTs",
       "Pre-bidding slots",
-      "Tweeting hashtags",
-      "Minting NFTs"
+      "Tweeting hashtags"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 17,
     level: 2,
     question: "Proof copying prevention relies on what?",
     options: [
-      "Crypto copyright police",
+      "Proof NFTs",
       "Unique nonce",
       "Meme watermarking",
-      "Proof NFTs"
+      "Crypto copyright police"
     ],
     correct_answer: 1
   },
@@ -221,11 +221,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "SPAM proofs in Succinct earn?",
     options: [
       "Crypto jail time",
-      "No economic reward",
       "Free gas tokens",
+      "No economic reward",
       "Discord emoji privileges"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 19,
@@ -233,11 +233,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Which mechanism reduces network contention in Succinct?",
     options: [
       "Mining rig smash tournament",
-      "Proof contests assignment",
       "NFT battles",
-      "Meme competitions"
+      "Meme competitions",
+      "Proof contests assignment"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 20,
@@ -245,11 +245,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "The advantage of auctions in Succinct is?",
     options: [
       "It looks fancy",
+      "Creates blockchain drama",
       "Decentralizes proof selection",
-      "Entertains provers",
-      "Creates blockchain drama"
+      "Entertains provers"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   
   // Level 3: Advanced Proof Mechanisms
@@ -259,23 +259,23 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Sybil resistance in Succinct means?",
     options: [
       "Multiple personalities discouraged",
-      "Splitting identity reduces profits",
       "Crypto jail if you cheat",
+      "Splitting identity reduces profits",
       "Vitalik's stare-down"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 22,
     level: 3,
     question: "What's a proving pool in Succinct?",
     options: [
+      "Ethereum hot tub parties",
       "Where provers swim after work",
       "Coordinated proof generation group",
-      "Crypto liquidity reservoirs",
-      "Ethereum hot tub parties"
+      "Crypto liquidity reservoirs"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 23,
@@ -283,21 +283,21 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Succinct's bidding window prevents what?",
     options: [
       "Shopping addiction",
+      "NFT FOMO",
       "Last-minute auction sniping",
-      "Blockchain tantrums",
-      "NFT FOMO"
+      "Blockchain tantrums"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 24,
     level: 3,
     question: "What happens if no valid proofs are submitted before the deadline?",
     options: [
-      "Blockchain has a meltdown",
+      "Emergency meme deployment",
       "Contest is re-run with a higher reward",
-      "Vitalik personally intervenes",
-      "Emergency meme deployment"
+      "Blockchain has a meltdown",
+      "Vitalik personally intervenes"
     ],
     correct_answer: 1
   },
@@ -306,12 +306,12 @@ export const quizQuestions: QuizQuestion[] = [
     level: 3,
     question: "Prover's bids are proportional to?",
     options: [
+      "Their NFT collection value",
       "Their Twitter followers",
       "Their proving capability",
-      "Their NFT collection value",
       "Their meme creation skills"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 26,
@@ -319,11 +319,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "What's the main advantage of Succinct's crypto-economic design?",
     options: [
       "Free crypto for everyone",
+      "More NFT opportunities",
       "Aligned incentives for all participants",
-      "Fancy blockchain terminology",
-      "More NFT opportunities"
+      "Fancy blockchain terminology"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 27,
@@ -332,8 +332,8 @@ export const quizQuestions: QuizQuestion[] = [
     options: [
       "Caffeine level",
       "Bid value and Alpha (α)",
-      "Blockchain hype cycle",
-      "Moon phase alignment"
+      "Moon phase alignment",
+      "Blockchain hype cycle"
     ],
     correct_answer: 1
   },
@@ -354,9 +354,9 @@ export const quizQuestions: QuizQuestion[] = [
     level: 3,
     question: "What protects proof contests from central manipulation?",
     options: [
-      "Blockchain police",
-      "Decentralized assignment protocol",
       "Anti-manipulation spells",
+      "Decentralized assignment protocol",
+      "Blockchain police",
       "Vitalik's watchful eye"
     ],
     correct_answer: 1
@@ -366,12 +366,12 @@ export const quizQuestions: QuizQuestion[] = [
     level: 3,
     question: "Succinct's assignment mechanism primarily optimizes for?",
     options: [
+      "Prover entertainment",
       "Maximum meme production",
       "Higher throughput and lower latency",
-      "Prover entertainment",
       "Blockchain drama minimization"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   
   // Level 4: Succinct Network Architecture
@@ -381,11 +381,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Succinct improves latency by?",
     options: [
       "Faster typing provers",
-      "Short bidding windows & quick assignments",
+      "Hiring blockchain sprinters",
       "Crypto coffee breaks",
-      "Hiring blockchain sprinters"
+      "Short bidding windows & quick assignments"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 32,
@@ -393,8 +393,8 @@ export const quizQuestions: QuizQuestion[] = [
     question: "What's NOT a component of the Succinct network?",
     options: [
       "Provers",
-      "Users",
       "Application-specific blockchain",
+      "Users",
       "Blockchain therapists"
     ],
     correct_answer: 3
@@ -405,20 +405,20 @@ export const quizQuestions: QuizQuestion[] = [
     question: "The blockchain in Succinct mainly coordinates what?",
     options: [
       "Crypto parties",
-      "Proof generation & verification",
       "NFT drops",
+      "Proof generation & verification",
       "Developer meetups"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 34,
     level: 4,
     question: "How does Succinct handle failure in proof generation?",
     options: [
-      "Sends apology NFTs",
-      "Re-runs contests with increased incentives",
       "Blockchain timeout",
+      "Re-runs contests with increased incentives",
+      "Sends apology NFTs",
       "Emergency meme protocol"
     ],
     correct_answer: 1
@@ -428,21 +428,21 @@ export const quizQuestions: QuizQuestion[] = [
     level: 4,
     question: "What's the main hardware requirement for Succinct provers?",
     options: [
+      "Liquid cooling for style points",
       "RGB gaming lights",
       "High-performance GPUs",
-      "Liquid cooling for style points",
       "Blockchain-compatible coffee machines"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 36,
     level: 4,
     question: "Succinct's proof verification is optimized for?",
     options: [
-      "Maximum blockchain drama",
-      "Cost and speed efficiency",
       "NFT compatibility",
+      "Cost and speed efficiency",
+      "Maximum blockchain drama",
       "Meme generation"
     ],
     correct_answer: 1
@@ -452,48 +452,48 @@ export const quizQuestions: QuizQuestion[] = [
     level: 4,
     question: "Which chain hosts the Succinct coordination layer?",
     options: [
-      "The fun chain",
       "A dedicated application-specific blockchain",
+      "The chain with the best memes",
       "Whatever chain Vitalik tweets about",
-      "The chain with the best memes"
+      "The fun chain"
     ],
-    correct_answer: 1
+    correct_answer: 0
   },
   {
     id: 38,
     level: 4,
     question: "When would you use compressed vs. native proofs?",
     options: [
-      "When you run out of blockchain space",
-      "Based on verification cost-benefit analysis",
       "When the moon is full",
-      "When your NFTs need compression"
+      "When your NFTs need compression",
+      "Based on verification cost-benefit analysis",
+      "When you run out of blockchain space"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 39,
     level: 4,
     question: "What makes proof verification in Succinct efficient?",
     options: [
+      "Quantum blockchain technology",
       "Blockchain magic",
-      "Specialized ZK circuits & optimizations",
       "Prover energy drinks",
-      "Quantum blockchain technology"
+      "Specialized ZK circuits & optimizations"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 40,
     level: 4,
     question: "Which proof type offers the best cost-efficiency for most use cases?",
     options: [
-      "The expensive one",
       "Compressed proofs",
       "The one with the coolest name",
+      "The expensive one",
       "Whatever Vitalik uses"
     ],
-    correct_answer: 1
+    correct_answer: 0
   },
   
   // Level 5: Practical Applications of Succinct
@@ -502,10 +502,10 @@ export const quizQuestions: QuizQuestion[] = [
     level: 5,
     question: "ZK Rollups use Succinct because?",
     options: [
-      "Rollups like trendy names",
+      "Ethereum told them to",
       "Cheap & reliable proofs",
-      "They like memes",
-      "Ethereum told them to"
+      "Rollups like trendy names",
+      "They like memes"
     ],
     correct_answer: 1
   },
@@ -514,60 +514,60 @@ export const quizQuestions: QuizQuestion[] = [
     level: 5,
     question: "What's the benefit of Succinct for dApp developers?",
     options: [
-      "More crypto parties",
-      "Easier integration of ZK proofs",
       "Better blockchain memes",
-      "Free NFT drops"
+      "Free NFT drops",
+      "Easier integration of ZK proofs",
+      "More crypto parties"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 43,
     level: 5,
     question: "Which is NOT a benefit of Succinct's modular approach?",
     options: [
-      "Specialized proving hardware",
       "Optimized cost structures",
       "Free blockchain counseling",
+      "Specialized proving hardware",
       "Improved scalability"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 44,
     level: 5,
     question: "How does Succinct help with blockchain scaling?",
     options: [
-      "Blockchain diet plans",
       "Efficient verification of off-chain computations",
-      "Crypto yoga sessions",
-      "NFT compression technology"
+      "NFT compression technology",
+      "Blockchain diet plans",
+      "Crypto yoga sessions"
     ],
-    correct_answer: 1
+    correct_answer: 0
   },
   {
     id: 45,
     level: 5,
     question: "The 'economic alignment' in Succinct refers to?",
     options: [
-      "Everyone getting rich",
-      "Incentives that encourage honest proving",
+      "NFT price stabilization",
       "Blockchain astrology",
-      "NFT price stabilization"
+      "Incentives that encourage honest proving",
+      "Everyone getting rich"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 46,
     level: 5,
     question: "Which network role benefits most from Succinct's tokenomics?",
     options: [
-      "Meme creators",
-      "Efficient provers with good hardware",
+      "Blockchain influencers",
       "NFT collectors",
-      "Blockchain influencers"
+      "Meme creators",
+      "Efficient provers with good hardware"
     ],
-    correct_answer: 1
+    correct_answer: 3
   },
   {
     id: 47,
@@ -575,21 +575,21 @@ export const quizQuestions: QuizQuestion[] = [
     question: "How does Succinct help blockchains maintain decentralization?",
     options: [
       "Blockchain therapy",
+      "Proof diversity quotas",
       "Distributing proving work through contests",
-      "Mandatory decentralization workshops",
-      "Proof diversity quotas"
+      "Mandatory decentralization workshops"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 48,
     level: 5,
     question: "What problem does Succinct's batching mechanism solve?",
     options: [
-      "Too many individual proofs",
+      "Proof loneliness",
       "Cost-efficiency for small transactions",
-      "Blockchain boredom",
-      "Proof loneliness"
+      "Too many individual proofs",
+      "Blockchain boredom"
     ],
     correct_answer: 1
   },
@@ -599,11 +599,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "Which types of applications benefit most from Succinct?",
     options: [
       "Dating apps",
+      "NFT art galleries",
       "Computation-heavy blockchain applications",
-      "Blockchain meme generators",
-      "NFT art galleries"
+      "Blockchain meme generators"
     ],
-    correct_answer: 1
+    correct_answer: 2
   },
   {
     id: 50,
@@ -611,10 +611,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: "What's the ultimate goal of the Succinct network?",
     options: [
       "Maximum blockchain drama",
-      "Accessible & efficient ZK proof generation",
       "World domination through memes",
-      "The perfect NFT marketplace"
+      "The perfect NFT marketplace",
+      "Accessible & efficient ZK proof generation"
     ],
-    correct_answer: 1
+    correct_answer: 3
   }
 ];
+
