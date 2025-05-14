@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '../contexts/AuthContext';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { Loader2 } from 'lucide-react'; 
 
 interface LeaderboardTableProps {
   currentUserId: string | null;
@@ -14,30 +15,59 @@ interface LeaderboardTableProps {
 export default function LeaderboardTable({ currentUserId = null }: LeaderboardTableProps) {
   const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const maxRetries = 3;
 
   useEffect(() => {
     const loadLeaderboard = async () => {
       try {
         setLoading(true);
+        setError(false);
+        
         const data = await fetchLeaderboard();
-        console.log("Leaderboard data:", data); // Add logging to see what data is returned
-        setLeaderboard(data || []);
-      } catch (error) {
-        console.error('Error loading leaderboard:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load leaderboard data",
-          variant: "destructive"
-        });
+        console.log("Leaderboard data:", data); 
+        
+        if (data && Array.isArray(data)) {
+          setLeaderboard(data);
+          setError(false);
+        } else {
+          console.error('Invalid leaderboard data format:', data);
+          setError(true);
+          
+          if (retryCount >= maxRetries - 1) {
+            toast({
+              title: "Error",
+              description: "Failed to load leaderboard data",
+              variant: "destructive"
+            });
+          } else {
+            // Try again with a delay
+            setTimeout(() => setRetryCount(prev => prev + 1), 1000);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading leaderboard:', err);
+        setError(true);
+        
+        if (retryCount >= maxRetries - 1) {
+          toast({
+            title: "Error",
+            description: "Failed to load leaderboard data",
+            variant: "destructive"
+          });
+        } else {
+          setTimeout(() => setRetryCount(prev => prev + 1), 1000);
+        }
       } finally {
         setLoading(false);
       }
     };
     
     loadLeaderboard();
-  }, []);
+  }, [retryCount]);
 
   const handleProfileClick = (playerId: string) => {
     if (!user) {
@@ -54,10 +84,36 @@ export default function LeaderboardTable({ currentUserId = null }: LeaderboardTa
     navigate(`/user/${playerId}`);
   };
 
+  const handleRetry = () => {
+    setRetryCount(0);
+    setLoading(true);
+    setError(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-pulse text-primary text-xl">Loading leaderboard...</div>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <div className="text-muted-foreground">Loading leaderboard...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh]">
+        <div className="text-center p-6 border border-destructive/30 rounded-md bg-destructive/10">
+          <h3 className="font-semibold text-lg mb-2">Leaderboard Error</h3>
+          <p className="mb-4">We couldn't load the leaderboard data. This could be due to a temporary connection issue.</p>
+          <button 
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+            onClick={handleRetry}
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -87,7 +143,6 @@ export default function LeaderboardTable({ currentUserId = null }: LeaderboardTa
                   {index === 0 && " 🏆"}
                   {index === 1 && " 🥈"}
                   {index === 2 && " 🥉"}
-                  {player.id === currentUserId && " (You)"}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
