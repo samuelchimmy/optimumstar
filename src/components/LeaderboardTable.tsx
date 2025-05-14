@@ -95,9 +95,9 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
         <TableBody>
           {leaderboardData.map((user, index) => {
             const isCurrentUser = user.id === currentUserId;
+            // Ensure we're using the correct score
             const score = user.correct_answers || 0;
             const isCompleted = user.quiz_completed;
-            const maxPossibleScore = user.level && user.level > 1 ? (user.level - 1) * 10 : 50;
             
             return (
               <TableRow 

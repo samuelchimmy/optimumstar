@@ -55,7 +55,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       // Level completed - show the score for this level
       setCompleted(true);
       
-      // Log final score for this level
+      // Calculate final score including the last answer
       const finalScore = isCorrect ? correctAnswers + 1 : correctAnswers;
       console.log(`Level ${level} completed with final score: ${finalScore}/10`);
       
@@ -65,11 +65,8 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       audio.play().catch(e => console.log("Audio play error:", e));
       
       // Pass the current level's score to the parent component
-      // The parent (QuizPage) will handle accumulating the scores
-      onComplete(level, finalScore);
+      onComplete(level + 1, finalScore);
       
-      // The database update will be handled in QuizPage.tsx, which has the complete
-      // accumulated score for all levels
       toast({
         title: "Level Completed! 🎉",
         description: `You scored ${finalScore} out of 10 on this level!`,
@@ -86,7 +83,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   }
 
   if (completed) {
-    // Calculate final score correctly including the last question
+    // Calculate final score correctly
     const finalLevelScore = correctAnswers;
     
     return (

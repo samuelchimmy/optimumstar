@@ -312,7 +312,7 @@ export async function updateUserProgress(
     console.log(`--------- UPDATING USER PROGRESS ---------`);
     console.log(`User ID: ${userId}`);
     console.log(`New Level: ${level}`);
-    console.log(`Total Accumulated Score: ${correctAnswers}`);
+    console.log(`Total Accumulated Score: ${correctAnswers}/50`);
     
     // Get current profile to correctly update total score
     const { data: existingProfile } = await supabase
@@ -348,11 +348,9 @@ export async function updateUserProgress(
       updates.quiz_completed = true;
     } else {
       // For level progress (not completing the entire quiz),
-      // correctAnswers parameter is the accumulated total from all completed levels
-      if (existingProfile.level && level > existingProfile.level) {
-        updates.correct_answers = correctAnswers;
-        console.log(`Level progress - Setting accumulated score to: ${correctAnswers}`);
-      }
+      // correctAnswers parameter is the accumulated total from all completed levels so far
+      updates.correct_answers = correctAnswers;
+      console.log(`Level progress - Setting accumulated score to: ${correctAnswers}/50`);
     }
     
     console.log('Applying database updates:', updates);
