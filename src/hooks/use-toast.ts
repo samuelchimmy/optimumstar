@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import {
   Toast,
@@ -12,6 +13,7 @@ type ToastProps = {
   description?: React.ReactNode
   action?: ToastActionElement
   variant?: "default" | "destructive"
+  duration?: number
 }
 
 type ToasterToast = {
