@@ -6,6 +6,7 @@ import QuizQuestion from './QuizQuestion';
 import { fetchQuestions, updateUserProgress, QuizQuestion as QuizQuestionType } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
+import { Trophy, Star } from 'lucide-react';
 
 interface QuizLevelProps {
   level: number;
@@ -54,8 +55,8 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
         }
         
         toast({
-          title: "Level Completed!",
-          description: "Congratulations! 🎉 You've completed this level!",
+          title: "Level Completed! 🎉",
+          description: "You're officially Succinct-certified for this level!",
         });
       }
     }
@@ -73,7 +74,9 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     return (
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-6">
-          <span className="celebration">Congratulations! 🎉</span>
+          <span className="celebration flex items-center justify-center gap-2">
+            <Trophy className="h-6 w-6" /> Congratulations! 🎉
+          </span>
         </h2>
         <p className="text-xl mb-8">You've completed Level {level}!</p>
         
@@ -86,7 +89,9 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
           </Button>
         ) : (
           <div className="space-y-4">
-            <p className="text-2xl font-bold text-primary">You've completed all levels!</p>
+            <p className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
+              <Star className="h-6 w-6" /> You're officially a Succinct Genius! 🎵🥳
+            </p>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
               onClick={() => navigate('/leaderboard')}

@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QuizQuestion as QuizQuestionType } from '../lib/supabase';
 import { toast } from '@/components/ui/use-toast';
+import { CircleCheck, CircleX } from 'lucide-react';
 
 interface QuizQuestionProps {
   question: QuizQuestionType;
@@ -41,8 +42,20 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
       audio.volume = 0.5;
       audio.play().catch(e => console.log("Audio play error:", e));
 
+      toast({
+        title: "Nailed it! 🎉",
+        description: "Your blockchain brain is on fire!",
+        variant: "default"
+      });
+
       // Set timer for next question
       setTimeLeft(3);
+    } else {
+      toast({
+        title: "Oops, blockchain brain-freeze! 🥶",
+        description: "Try again, you've got this!",
+        variant: "destructive"
+      });
     }
   };
 
@@ -99,7 +112,9 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
             <div className="w-full text-center">
               {isCorrect ? (
                 <div className="text-green-600 font-medium">
-                  <p className="text-lg">Correct! 🎉</p>
+                  <p className="text-lg flex items-center justify-center gap-2">
+                    <CircleCheck className="h-5 w-5" /> Correct! 🎉
+                  </p>
                   {timeLeft !== null && (
                     <p className="text-sm mt-1">
                       Next question in {timeLeft}...
@@ -108,7 +123,9 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
                 </div>
               ) : (
                 <div className="text-red-600 font-medium">
-                  <p className="text-lg">Try again!</p>
+                  <p className="text-lg flex items-center justify-center gap-2">
+                    <CircleX className="h-5 w-5" /> Blockchain broken! Try again?
+                  </p>
                   <Button 
                     onClick={() => {
                       setHasSubmitted(false);

@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
+import { quizQuestions } from '../data/quizQuestions';
 
 export { supabase } from '@/integrations/supabase/client';
 
@@ -16,7 +17,7 @@ export interface UserProfile {
 }
 
 export interface QuizQuestion {
-  id: string;
+  id: string | number;
   question: string;
   options: string[];
   correct_answer: number;
@@ -179,19 +180,9 @@ export async function getUserRanking(userId: string): Promise<number> {
   }
 }
 
-// Mock function for fetching quiz questions since we're missing this implementation
+// Fetch quiz questions from our local data
 export async function fetchQuestions(level: number): Promise<QuizQuestion[]> {
-  console.log(`Fetching questions for level ${level}`);
-  // This would normally fetch questions from a database
-  // Mock implementation for now
-  return [
-    {
-      id: '1',
-      question: `Level ${level} Question - Sample question text?`,
-      options: ['Option A', 'Option B', 'Option C', 'Option D'],
-      correct_answer: 0,
-      level: level
-    },
-    // Additional mock questions would go here
-  ];
+  // Filter questions for the requested level
+  const levelQuestions = quizQuestions.filter(q => q.level === level);
+  return levelQuestions;
 }
