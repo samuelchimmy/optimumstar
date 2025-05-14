@@ -29,9 +29,33 @@
 
     --radius: 0.5rem;
   }
+  
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
  
   body {
-    @apply bg-light text-dark;
+    @apply bg-light text-dark dark:bg-dark dark:text-light transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -39,22 +63,27 @@
 @layer components {
   .quiz-option {
     @apply border-2 border-secondary rounded-lg p-4 cursor-pointer transition-all
-    hover:bg-secondary hover:text-dark hover:border-primary;
+    hover:bg-secondary hover:text-dark hover:border-primary
+    dark:hover:bg-secondary/80;
   }
 
   .quiz-option.correct {
-    @apply bg-green-100 border-green-500;
+    @apply bg-green-100 border-green-500 dark:bg-green-900/30 dark:border-green-500/70;
   }
 
   .quiz-option.incorrect {
-    @apply bg-red-100 border-red-500;
+    @apply bg-red-100 border-red-500 dark:bg-red-900/30 dark:border-red-500/70;
   }
 
   .quiz-option.selected {
-    @apply border-primary bg-primary/10;
+    @apply border-primary bg-primary/10 dark:bg-primary/20;
   }
   
   .celebration {
     @apply animate-celebration text-primary;
+  }
+  
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl dark:bg-black/10;
   }
 }

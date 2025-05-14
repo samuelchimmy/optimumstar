@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface LayoutProps {
   children: ReactNode;
@@ -31,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-dark text-light p-4 shadow-md">
+      <header className="bg-dark text-light dark:bg-gray-900 p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="font-bold text-xl flex items-center">
             <img 
@@ -40,7 +41,7 @@ export default function Layout({ children }: LayoutProps) {
               className="h-8 w-auto mr-2" 
             />
             <span className="text-primary">Succinct</span>
-            <span className="text-secondary">Star</span>
+            <span className="text-secondary dark:text-secondary-dark">Star</span>
           </Link>
           
           <nav className="flex items-center space-x-6">
@@ -56,6 +57,8 @@ export default function Layout({ children }: LayoutProps) {
               Succinct Whitepaper
             </a>
             
+            <ThemeToggle />
+            
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link to="/profile" className="hover:text-secondary transition-colors">
@@ -64,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Button 
                   variant="outline" 
                   onClick={signOut}
-                  className="text-light border-light hover:bg-primary hover:text-light"
+                  className="text-light border-light hover:bg-primary hover:text-light dark:border-light/70"
                 >
                   Sign Out
                 </Button>
@@ -84,13 +87,13 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
       
-      <footer className="bg-dark text-light p-4">
+      <footer className="bg-dark text-light dark:bg-gray-900 p-4">
         <div className="container mx-auto space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
               <p className="text-sm mt-1">
-                <Link to="/terms" className="text-secondary hover:text-primary transition-colors">
+                <Link to="/terms" className="text-secondary hover:text-primary transition-colors dark:text-secondary-dark">
                   Terms & Conditions
                 </Link>
               </p>
@@ -98,7 +101,7 @@ export default function Layout({ children }: LayoutProps) {
             
             <div className="flex flex-col items-center md:items-end">
               <p className="text-sm mb-2">Donate to this project</p>
-              <div className="flex items-center space-x-2 bg-gray-800 rounded-md px-3 py-2 text-sm">
+              <div className="flex items-center space-x-2 bg-gray-800 dark:bg-gray-950 rounded-md px-3 py-2 text-sm">
                 <span className="truncate max-w-[200px] sm:max-w-xs">{walletAddress}</span>
                 <button 
                   onClick={copyToClipboard}
