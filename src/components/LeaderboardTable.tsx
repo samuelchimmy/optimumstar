@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '../contexts/AuthContext';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export default function LeaderboardTable() {
   const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
@@ -18,7 +18,8 @@ export default function LeaderboardTable() {
       try {
         setLoading(true);
         const data = await fetchLeaderboard();
-        setLeaderboard(data);
+        console.log("Leaderboard data:", data); // Add logging to see what data is returned
+        setLeaderboard(data || []);
       } catch (error) {
         console.error('Error loading leaderboard:', error);
         toast({
@@ -39,8 +40,7 @@ export default function LeaderboardTable() {
       // If not logged in, redirect to login with a helpful message
       toast({
         title: "Authentication Required",
-        description: "Please login to view user profiles",
-        duration: 3000,
+        description: "Please login to view user profiles"
       });
       navigate('/login');
       return;
