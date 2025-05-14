@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Twitter, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchUserProfile, UserProfile } from '../lib/supabase';
+import { fetchUserProfile, createUserProfile, UserProfile } from '../lib/supabase';
 
 interface ProfileCardProps {
   onEdit?: () => void;
@@ -19,6 +19,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(loading);
   const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -26,13 +27,31 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
       
       try {
         console.log('ProfileCard: Loading profile for user ID:', user.id);
-        const userProfile = await fetchUserProfile(user.id);
+        let userProfile = await fetchUserProfile(user.id);
         console.log('ProfileCard: Profile data received:', userProfile);
+        
+        // If profile not found, attempt to create a default profile
+        if (!userProfile && retryCount < 1) {
+          console.log('ProfileCard: No profile found, creating default profile for user:', user.id);
+          const defaultProfile: UserProfile = {
+            id: user.id,
+            username: user.email?.split('@')[0] || 'User',
+            avatar_url: '',
+            level: 1,
+            correct_answers: 0,
+            created_at: new Date().toISOString(),
+          };
+          
+          userProfile = await createUserProfile(defaultProfile);
+          console.log('ProfileCard: Default profile created:', userProfile);
+          setRetryCount(retryCount + 1);
+        }
         
         if (userProfile) {
           setProfile(userProfile);
+          setError(false);
         } else {
-          console.error('ProfileCard: No profile data returned');
+          console.error('ProfileCard: Failed to load or create profile');
           setError(true);
         }
       } catch (err) {
@@ -46,7 +65,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
     if (!loading) {
       loadUserProfile();
     }
-  }, [user, loading]);
+  }, [user, loading, retryCount]);
 
   if (loading || profileLoading) {
     return (
@@ -73,9 +92,19 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
           <CardTitle>Profile Error</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-gray-500">
-            Unable to load profile. Please try again later or contact support if the issue persists.
-          </p>
+          <div className="text-center text-gray-500">
+            <p className="mb-4">Unable to load profile. Please try again later or contact support if the issue persists.</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setProfileLoading(true);
+                setRetryCount(0);
+                setTimeout(() => window.location.reload(), 500);
+              }}
+            >
+              Try Again
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -96,7 +125,14 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
       <CardContent>
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24 border-2 border-primary">
-            <AvatarImage src={profile.avatar_url || ''} alt={profile.username || ''} />
+            <AvatarImage 
+              src={profile.avatar_url || ''} 
+              alt={profile.username || ''}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                console.log('Avatar image failed to load, falling back to user initials');
+              }} 
+            />
             <AvatarFallback className="text-2xl">
               {profile.username && typeof profile.username === 'string' 
                 ? profile.username.slice(0, 2).toUpperCase() 
