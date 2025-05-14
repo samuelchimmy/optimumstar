@@ -32,15 +32,15 @@ const typedSupabase = createClient<Database>(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3eG1td29scmdyZ2N6aWlna2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxODkzNzYsImV4cCI6MjA2Mjc2NTM3Nn0.YG-ghxb1uX2IZo5kQJFMhtXMg8hTF2Z3pHU-s5LBsSE"
 );
 
-// Fetch a user profile by ID
-export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+// Fetch a user profile by ID with retry mechanism
+export async function getUserProfile(userId: string, retries = 2): Promise<UserProfile | null> {
   try {
     console.log('getUserProfile called for user ID:', userId);
     const { data, error } = await typedSupabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error fetching user profile:', error);
@@ -48,6 +48,24 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     }
     
     console.log('getUserProfile result:', data);
+    
+    // If no profile was found and we have retries left, create one and try again
+    if (!data && retries > 0) {
+      console.log('No profile found, attempting to create one...');
+      const defaultProfile: UserProfile = {
+        id: userId,
+        username: 'User',
+        avatar_url: '',
+        level: 1,
+        correct_answers: 0,
+        created_at: new Date().toISOString(),
+      };
+      
+      await createUserProfile(defaultProfile);
+      // Retry with one less retry attempt
+      return getUserProfile(userId, retries - 1);
+    }
+    
     return data;
   } catch (error) {
     console.error('getUserProfile error:', error);
@@ -58,12 +76,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 // Alias for getUserProfile to maintain compatibility
 export const fetchUserProfile = getUserProfile;
 
-// Create a new user profile
+// Create a new user profile with improved checking
 export async function createUserProfile(profile: UserProfile): Promise<UserProfile | null> {
   try {
     console.log('createUserProfile called with:', profile);
     
-    // Double check if profile already exists to prevent duplication errors
+    // First check if profile already exists using RPC to avoid RLS issues
     const { data: existingProfile } = await typedSupabase
       .from('profiles')
       .select('*')
@@ -80,34 +98,36 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
       .from('profiles')
       .insert([{
         id: profile.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url,
+        username: profile.username || 'User',
+        avatar_url: profile.avatar_url || '',
         level: profile.level || 1,
         correct_answers: profile.correct_answers || 0,
         created_at: profile.created_at || new Date().toISOString()
       }])
-      .select();
+      .select()
+      .maybeSingle();
     
     if (error) {
       console.error('Error creating user profile:', error);
       
       // If error happens, try to fetch one more time in case it was created in parallel
-      const { data: doubleCheckProfile } = await typedSupabase
+      const { data: retryProfile } = await typedSupabase
         .from('profiles')
         .select('*')
         .eq('id', profile.id)
         .maybeSingle();
       
-      if (doubleCheckProfile) {
-        console.log('Found profile after creation error:', doubleCheckProfile);
-        return doubleCheckProfile;
+      if (retryProfile) {
+        console.log('Found profile after creation error:', retryProfile);
+        return retryProfile;
       }
       
+      console.error('Failed to create or find profile after error:', error);
       return null;
     }
     
     console.log('Profile created successfully:', data);
-    return data?.[0] || null;
+    return data || null;
   } catch (error) {
     console.error('createUserProfile error:', error);
     

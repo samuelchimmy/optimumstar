@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Twitter, MessageSquare } from 'lucide-react';
+import { Twitter, MessageSquare, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserProfile, createUserProfile, UserProfile } from '../lib/supabase';
 import { toast } from '@/hooks/use-toast';
@@ -21,7 +21,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
   const [profileLoading, setProfileLoading] = useState(loading);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 2;
+  const maxRetries = 3;
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -29,10 +29,14 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
       
       try {
         console.log('ProfileCard: Loading profile for user ID:', user.id);
-        let userProfile = await fetchUserProfile(user.id);
+        setProfileLoading(true);
+        setError(false);
+        
+        // Try to fetch the user profile with automatic retries
+        let userProfile = await fetchUserProfile(user.id, 1);
         console.log('ProfileCard: Profile data received:', userProfile);
         
-        // If profile not found, attempt to create a default profile
+        // If profile still not found, attempt to create a default profile
         if (!userProfile && retryCount < maxRetries) {
           console.log('ProfileCard: No profile found, creating default profile for user:', user.id);
           const defaultProfile: UserProfile = {
@@ -48,18 +52,18 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
             userProfile = await createUserProfile(defaultProfile);
             console.log('ProfileCard: Default profile created:', userProfile);
             
-            // If creation didn't return a profile, try fetching it again
+            // If creation didn't return a profile, try fetching it again after a short delay
             if (!userProfile) {
               console.log('ProfileCard: Trying to fetch profile after creation attempt');
+              await new Promise(resolve => setTimeout(resolve, 500));
               userProfile = await fetchUserProfile(user.id);
             }
           } catch (createError) {
             console.error('ProfileCard: Error creating profile:', createError);
-            // Try fetching one more time
+            // Try fetching one more time after a short delay
+            await new Promise(resolve => setTimeout(resolve, 500));
             userProfile = await fetchUserProfile(user.id);
           }
-          
-          setRetryCount(retryCount + 1);
         }
         
         if (userProfile) {
@@ -70,23 +74,31 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
           console.error('ProfileCard: Failed to load or create profile after attempts');
           setError(true);
           
-          if (retryCount >= maxRetries) {
+          if (retryCount >= maxRetries - 1) {
             toast({
               title: "Profile Error",
               description: "Could not load your profile after multiple attempts. Please try logging out and back in.",
               variant: "destructive"
             });
+          } else {
+            // Increment retry count and try again
+            setRetryCount(retryCount + 1);
           }
         }
       } catch (err) {
         console.error('ProfileCard: Error fetching user profile:', err);
         setError(true);
+        
+        if (retryCount < maxRetries - 1) {
+          // Increment retry count and try again
+          setRetryCount(retryCount + 1);
+        }
       } finally {
         setProfileLoading(false);
       }
     };
     
-    if (!loading) {
+    if (!loading && user) {
       loadUserProfile();
     }
   }, [user, loading, retryCount]);
@@ -99,10 +111,8 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 items-center">
-            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-24 w-24 rounded-full" />
-            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-40 rounded" />
-            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-full max-w-xs rounded" />
-            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-full max-w-xs rounded" />
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading your profile...</p>
           </div>
         </CardContent>
       </Card>
@@ -117,17 +127,25 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
         </CardHeader>
         <CardContent>
           <div className="text-center text-gray-500">
-            <p className="mb-4">Unable to load profile. Please try again later or contact support if the issue persists.</p>
+            <p className="mb-4">Unable to load profile. Please try again or contact support if the issue persists.</p>
             <Button 
-              variant="outline" 
+              variant="default" 
               onClick={() => {
                 setProfileLoading(true);
                 setRetryCount(0);
                 setError(false);
-                setTimeout(() => window.location.reload(), 500);
               }}
+              className="mr-2"
             >
               Try Again
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setTimeout(() => window.location.reload(), 100);
+              }}
+            >
+              Refresh Page
             </Button>
           </div>
         </CardContent>

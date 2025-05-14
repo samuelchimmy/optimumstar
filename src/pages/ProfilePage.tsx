@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { UserProfile, fetchUserProfile, createUserProfile } from '../lib/supabase';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -16,6 +17,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const maxRetries = 3;
   
   useEffect(() => {
     if (!loading && !user) {
@@ -25,6 +28,9 @@ export default function ProfilePage() {
       // Load user profile
       const loadProfile = async () => {
         try {
+          setProfileLoading(true);
+          setProfileError(false);
+          
           console.log('Fetching profile for user ID:', user.id);
           let userProfile = await fetchUserProfile(user.id);
           console.log('Profile data received:', userProfile);
@@ -48,12 +54,15 @@ export default function ProfilePage() {
               // If creation failed, try fetching again as it might have been created in another component
               if (!userProfile) {
                 console.log('Retrying profile fetch after creation attempt');
+                // Small delay to allow database to update
+                await new Promise(resolve => setTimeout(resolve, 500));
                 userProfile = await fetchUserProfile(user.id);
                 console.log('Retry fetch result:', userProfile);
               }
             } catch (createError) {
               console.error('Error creating profile:', createError);
               // Try fetching one more time in case it was created elsewhere
+              await new Promise(resolve => setTimeout(resolve, 500));
               userProfile = await fetchUserProfile(user.id);
             }
           }
@@ -64,20 +73,34 @@ export default function ProfilePage() {
           } else {
             console.error('Failed to load or create profile');
             setProfileError(true);
-            toast({
-              title: "Error loading profile",
-              description: "Unable to load your profile. Please try again later.",
-              variant: "destructive"
-            });
+            
+            // Only show toast if we've exhausted retries
+            if (retryAttempt >= maxRetries - 1) {
+              toast({
+                title: "Error loading profile",
+                description: "Unable to load your profile. Please try again later.",
+                variant: "destructive"
+              });
+            } else {
+              // Increment retry counter
+              setRetryAttempt(prev => prev + 1);
+            }
           }
         } catch (error) {
           console.error('Error loading profile:', error);
           setProfileError(true);
-          toast({
-            title: "Error loading profile",
-            description: "An error occurred while fetching your profile data.",
-            variant: "destructive"
-          });
+          
+          // Only show toast if we've exhausted retries
+          if (retryAttempt >= maxRetries - 1) {
+            toast({
+              title: "Error loading profile",
+              description: "An error occurred while fetching your profile data.",
+              variant: "destructive"
+            });
+          } else {
+            // Increment retry counter
+            setRetryAttempt(prev => prev + 1);
+          }
         } finally {
           setProfileLoading(false);
         }
@@ -85,7 +108,7 @@ export default function ProfilePage() {
       
       loadProfile();
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, retryAttempt]);
   
   const handleEdit = () => {
     setIsEditing(true);
@@ -104,22 +127,31 @@ export default function ProfilePage() {
     });
   };
   
+  const handleRetry = () => {
+    setProfileLoading(true);
+    setProfileError(false);
+    setRetryAttempt(prev => prev + 1);
+  };
+  
   return (
     <Layout>
       <div className="min-h-[60vh] py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Your Profile</h1>
         
         {profileLoading ? (
-          <ProfileCard loading={true} />
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading your profile...</p>
+          </div>
         ) : profileError ? (
-          <div className="max-w-md mx-auto text-center p-4 border border-red-300 rounded-md bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200">
-            <h3 className="font-semibold">Profile Error</h3>
-            <p>Unable to load your profile data. Please try refreshing the page or logging in again.</p>
+          <div className="max-w-md mx-auto text-center p-6 border border-red-300 rounded-md bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200">
+            <h3 className="font-semibold text-lg mb-2">Profile Error</h3>
+            <p className="mb-4">Unable to load your profile data. This could be due to a temporary connection issue.</p>
             <button 
-              className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+              onClick={handleRetry}
             >
-              Refresh Page
+              Retry Loading Profile
             </button>
           </div>
         ) : (
@@ -130,7 +162,7 @@ export default function ProfilePage() {
               onCancel={handleCancelEdit}
             />
           ) : (
-            <ProfileCard onEdit={handleEdit} editable={true} />
+            profile && <ProfileCard onEdit={handleEdit} editable={true} />
           )
         )}
       </div>
