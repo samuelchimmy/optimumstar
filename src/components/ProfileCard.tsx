@@ -65,7 +65,11 @@ export default function ProfileCard() {
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24 border-2 border-primary">
             <AvatarImage src={profile.avatar_url} alt={profile.username} />
-            <AvatarFallback className="text-2xl">{profile.username.slice(0, 2)}</AvatarFallback>
+            <AvatarFallback className="text-2xl">
+              {profile.username && typeof profile.username === 'string' 
+                ? profile.username.slice(0, 2) 
+                : '??'}
+            </AvatarFallback>
           </Avatar>
           
           <h2 className="text-2xl font-bold">{profile.username}</h2>
