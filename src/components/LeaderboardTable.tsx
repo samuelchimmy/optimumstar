@@ -117,7 +117,6 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
                 <TableCell className="font-semibold">
                   {user.username || 'Anonymous'}
                   {isCurrentUser && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>}
-                  {isCompleted && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">All levels completed!</span>}
                 </TableCell>
                 <TableCell className="text-right font-mono">
                   {score}<span className="text-muted-foreground text-xs">/50</span>
