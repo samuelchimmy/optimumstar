@@ -33,7 +33,12 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-dark text-light p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="font-bold text-xl">
+          <Link to="/" className="font-bold text-xl flex items-center">
+            <img 
+              src="/lovable-uploads/72641f32-8efc-4575-8782-2eee89d33f64.png" 
+              alt="Succinct Logo" 
+              className="h-8 w-auto mr-2" 
+            />
             <span className="text-primary">Succinct</span>
             <span className="text-secondary">Star</span>
           </Link>
@@ -82,7 +87,14 @@ export default function Layout({ children }: LayoutProps) {
       <footer className="bg-dark text-light p-4">
         <div className="container mx-auto space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
+            <div>
+              <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
+              <p className="text-sm mt-1">
+                <Link to="/terms" className="text-secondary hover:text-primary transition-colors">
+                  Terms & Conditions
+                </Link>
+              </p>
+            </div>
             
             <div className="flex flex-col items-center md:items-end">
               <p className="text-sm mb-2">Donate to this project</p>

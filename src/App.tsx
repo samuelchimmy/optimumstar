@@ -11,6 +11,7 @@ import ProfilePage from "./pages/ProfilePage";
 import QuizPage from "./pages/QuizPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
 
@@ -32,6 +33,7 @@ function App() {
               <Route path="/quiz" element={<QuizPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/user/:userId" element={<UserProfilePage />} />
+              <Route path="/terms" element={<TermsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
