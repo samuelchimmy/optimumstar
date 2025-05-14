@@ -1,16 +1,21 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Layout from '../components/Layout';
 import QuizLevel from '../components/QuizLevel';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserProfile } from '../lib/supabase';
+import { getUserProfile, updateUserProgress } from '../lib/supabase';
+import { Star, Trophy, Award } from 'lucide-react';
 
 export default function QuizPage() {
   const { user, loading } = useAuth();
   const [currentLevel, setCurrentLevel] = useState<number | null>(null);
   const [isStarted, setIsStarted] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [totalScore, setTotalScore] = useState(0);
+  const [levelScores, setLevelScores] = useState<number[]>([0, 0, 0, 0, 0]);
+  const [quizCompleted, setQuizCompleted] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -43,9 +48,29 @@ export default function QuizPage() {
     setIsStarted(true);
   };
   
-  const handleLevelComplete = (nextLevel: number) => {
-    setCurrentLevel(nextLevel);
-    setIsStarted(true);
+  const handleLevelComplete = (nextLevel: number, score: number) => {
+    // Store the score for this level
+    const updatedScores = [...levelScores];
+    updatedScores[currentLevel! - 1] = score;
+    setLevelScores(updatedScores);
+    
+    // Calculate total score so far
+    const newTotalScore = updatedScores.reduce((sum, score) => sum + score, 0);
+    setTotalScore(newTotalScore);
+    
+    // Check if we've completed all levels
+    if (nextLevel > 5) {
+      setQuizCompleted(true);
+      
+      // Update the final score in the database
+      if (user) {
+        updateUserProgress(user.id, nextLevel, newTotalScore);
+      }
+    } else {
+      // Continue to next level
+      setCurrentLevel(nextLevel);
+      setIsStarted(true);
+    }
   };
   
   if (loading || loadingProfile) {
@@ -53,6 +78,67 @@ export default function QuizPage() {
       <Layout>
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="animate-pulse text-primary text-xl">Loading quiz...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (quizCompleted) {
+    return (
+      <Layout>
+        <div className="min-h-[60vh] py-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold mb-8 flex items-center justify-center gap-2">
+              <Award className="h-8 w-8 text-primary" /> Quiz Completed! 🎉
+            </h1>
+            
+            <div className="bg-secondary/20 rounded-lg p-8 mb-8">
+              <h2 className="text-3xl font-bold text-primary mb-6">Your Final Score</h2>
+              <div className="text-5xl font-bold mb-6">{totalScore} <span className="text-2xl text-muted-foreground">/50</span></div>
+              
+              <div className="space-y-4 mb-6">
+                {levelScores.map((score, index) => (
+                  <div key={index} className="flex justify-between items-center border-b pb-2">
+                    <span>Level {index + 1}</span>
+                    <span className="font-semibold">{score}/10</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="text-xl mt-4">
+                {totalScore >= 45 && (
+                  <p className="text-green-600">Outstanding! You're a blockchain genius! 🏆</p>
+                )}
+                {totalScore >= 30 && totalScore < 45 && (
+                  <p className="text-primary">Great job! You know your Succinct stuff! 🌟</p>
+                )}
+                {totalScore < 30 && (
+                  <p>Keep learning! You'll master Succinct soon! 📚</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={() => {
+                  setCurrentLevel(1);
+                  setIsStarted(false);
+                  setQuizCompleted(false);
+                  setTotalScore(0);
+                  setLevelScores([0, 0, 0, 0, 0]);
+                }}
+                className="bg-primary hover:bg-primary/90 text-light"
+              >
+                Take Quiz Again
+              </Button>
+              <Button
+                onClick={() => navigate('/leaderboard')}
+                variant="outline"
+              >
+                View Leaderboard
+              </Button>
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -75,8 +161,8 @@ export default function QuizPage() {
             )}
             
             <p className="text-lg mb-8">
-              Answer all 10 questions correctly to advance to the next level. 
-              There are 5 levels in total with increasing difficulty.
+              Answer all 10 questions in each level to test your knowledge.
+              There are 5 levels with 10 questions each, for a total of 50 points.
             </p>
             
             <Button 

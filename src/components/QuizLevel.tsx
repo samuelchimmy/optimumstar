@@ -10,7 +10,7 @@ import { Trophy, Star } from 'lucide-react';
 
 interface QuizLevelProps {
   level: number;
-  onComplete: (level: number) => void;
+  onComplete: (level: number, score: number) => void;
 }
 
 export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
@@ -33,32 +33,38 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   }, [level]);
 
   const handleAnswerSubmit = async (isCorrect: boolean) => {
+    // Track correct answers only when the answer is correct
     if (isCorrect) {
       const newCorrectAnswers = correctAnswers + 1;
       setCorrectAnswers(newCorrectAnswers);
       
-      // Move to next question or complete level
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else {
-        // Level completed!
-        setCompleted(true);
-        
-        // Play celebration music
-        const audio = new Audio("/celebration.mp3");
-        audio.volume = 0.5;
-        audio.play().catch(e => console.log("Audio play error:", e));
-        
-        // Update user progress in database
-        if (user) {
-          await updateUserProgress(user.id, level + 1, newCorrectAnswers);
-        }
-        
-        toast({
-          title: "Level Completed! 🎉",
-          description: "You're officially Succinct-certified for this level!",
-        });
+      // Play a small success sound
+      const audio = new Audio("/success.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(e => console.log("Audio play error:", e));
+    }
+    
+    // Move to next question regardless of correct/incorrect
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Level completed - show the score for this level
+      setCompleted(true);
+      
+      // Play celebration music
+      const audio = new Audio("/celebration.mp3");
+      audio.volume = 0.5;
+      audio.play().catch(e => console.log("Audio play error:", e));
+      
+      // Update user progress in database with the current level score
+      if (user) {
+        await updateUserProgress(user.id, level + 1, correctAnswers);
       }
+      
+      toast({
+        title: "Level Completed! 🎉",
+        description: `You scored ${correctAnswers} out of 10 on this level!`,
+      });
     }
   };
 
@@ -75,28 +81,28 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-6">
           <span className="celebration flex items-center justify-center gap-2">
-            <Trophy className="h-6 w-6" /> Congratulations! 🎉
+            <Trophy className="h-6 w-6" /> Level {level} Completed! 🎉
           </span>
         </h2>
-        <p className="text-xl mb-8">You've completed Level {level}!</p>
+        <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{correctAnswers} / 10</span></p>
         
         {level < 5 ? (
           <Button 
-            className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6"
-            onClick={() => onComplete(level + 1)}
+            className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
+            onClick={() => onComplete(level + 1, correctAnswers)}
           >
             Continue to Level {level + 1}
           </Button>
         ) : (
           <div className="space-y-4">
             <p className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
-              <Star className="h-6 w-6" /> You're officially a Succinct Genius! 🎵🥳
+              <Star className="h-6 w-6" /> You've completed all levels! 🎵🥳
             </p>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
-              onClick={() => navigate('/leaderboard')}
+              onClick={() => onComplete(level + 1, correctAnswers)}
             >
-              View Leaderboard
+              See Your Final Score
             </Button>
           </div>
         )}

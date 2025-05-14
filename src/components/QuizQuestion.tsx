@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QuizQuestion as QuizQuestionType } from '../lib/supabase';
 import { toast } from '@/components/ui/use-toast';
-import { CircleCheck, CircleX } from 'lucide-react';
+import { CircleCheck, CircleX, ArrowRight } from 'lucide-react';
 
 interface QuizQuestionProps {
   question: QuizQuestionType;
@@ -47,16 +47,16 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
         description: "Your blockchain brain is on fire!",
         variant: "default"
       });
-
-      // Set timer for next question
-      setTimeLeft(3);
     } else {
       toast({
         title: "Oops, blockchain brain-freeze! 🥶",
-        description: "Try again, you've got this!",
+        description: "Moving to next question...",
         variant: "destructive"
       });
     }
+    
+    // Set timer for next question (for both correct and incorrect answers)
+    setTimeLeft(3);
   };
 
   useEffect(() => {
@@ -124,18 +124,22 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
               ) : (
                 <div className="text-red-600 font-medium">
                   <p className="text-lg flex items-center justify-center gap-2">
-                    <CircleX className="h-5 w-5" /> Blockchain broken! Try again?
+                    <CircleX className="h-5 w-5" /> Incorrect!
                   </p>
                   <Button 
                     onClick={() => {
-                      setHasSubmitted(false);
-                      setSelectedOption(null);
+                      setTimeLeft(0);
                     }}
                     variant="outline"
-                    className="mt-2"
+                    className="mt-2 flex gap-2 items-center"
                   >
-                    Try Again
+                    Next Question <ArrowRight className="h-4 w-4" />
                   </Button>
+                  {timeLeft !== null && (
+                    <p className="text-sm mt-1">
+                      Next question in {timeLeft}...
+                    </p>
+                  )}
                 </div>
               )}
             </div>

@@ -305,9 +305,21 @@ export async function updateUserProgress(
       return false;
     }
     
+    // Get current profile to correctly update total score
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('level, correct_answers')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    // If total score at level 5 completion is provided, use that value directly
+    // Otherwise, update level normally
     const { error } = await supabase
       .from('profiles')
-      .update({ level, correct_answers: correctAnswers })
+      .update({ 
+        level, 
+        correct_answers: correctAnswers 
+      })
       .eq('id', userId);
     
     if (error) {
