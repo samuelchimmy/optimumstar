@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +7,6 @@ interface AuthContextProps {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signInWithDiscord: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -51,47 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     getInitialSession();
   }, []);
-
-  const signInWithDiscord = async () => {
-    try {
-      // Use redirectTo instead of embedded iframe
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'discord',
-        options: {
-          redirectTo: `${window.location.origin}`,
-          skipBrowserRedirect: false // This ensures the browser will redirect to Discord
-        }
-      });
-      
-      if (error) {
-        console.error('Discord sign in error:', error.message);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Discord sign in error:', error);
-      throw error;
-    }
-  };
-  
-  const signInWithGoogle = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`,
-          skipBrowserRedirect: false // This ensures the browser will redirect to Google
-        }
-      });
-      
-      if (error) {
-        console.error('Google sign in error:', error.message);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Google sign in error:', error);
-      throw error;
-    }
-  };
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
@@ -147,8 +105,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     user,
     loading,
-    signInWithDiscord,
-    signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
     signOut,
