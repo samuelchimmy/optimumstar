@@ -4,6 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
 import { Trophy } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import { 
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface LeaderboardTableProps {
   currentUserId: string | null;
@@ -19,6 +28,16 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
       try {
         setLoading(true);
         const data = await fetchLeaderboard();
+        
+        // Log the fetched data for debugging
+        console.log('Leaderboard data fetched:', data);
+        console.log('Scores:', data.map(user => ({ 
+          username: user.username, 
+          score: user.correct_answers,
+          level: user.level,
+          completed: user.quiz_completed
+        })));
+        
         setLeaderboardData(data);
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -63,43 +82,57 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
   
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b">
-            <th className="py-3 px-4 text-left">Rank</th>
-            <th className="py-3 px-4 text-left">Player</th>
-            <th className="py-3 px-4 text-right">Score</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableCaption>Leaderboard shows accumulated scores from all completed levels</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Rank</TableHead>
+            <TableHead>Player</TableHead>
+            <TableHead className="text-right">Score (out of 50)</TableHead>
+            <TableHead className="text-right">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {leaderboardData.map((user, index) => {
             const isCurrentUser = user.id === currentUserId;
+            const score = user.correct_answers || 0;
+            const isCompleted = user.quiz_completed;
+            const maxPossibleScore = user.level && user.level > 1 ? (user.level - 1) * 10 : 50;
             
             return (
-              <tr 
+              <TableRow 
                 key={user.id}
-                className={`border-b hover:bg-secondary/10 transition-colors cursor-pointer 
+                className={`hover:bg-secondary/10 transition-colors cursor-pointer 
                   ${isCurrentUser ? 'bg-primary/5' : ''}`}
                 onClick={() => handleRowClick(user.id)}
               >
-                <td className="py-3 px-4 font-mono">
+                <TableCell className="font-mono">
                   {index === 0 && <Trophy className="inline mr-1 text-yellow-500 h-4 w-4" />}
                   {index === 1 && <Trophy className="inline mr-1 text-gray-400 h-4 w-4" />}
                   {index === 2 && <Trophy className="inline mr-1 text-amber-600 h-4 w-4" />}
                   {index > 2 && `#${index + 1}`}
-                </td>
-                <td className="py-3 px-4 font-semibold">
+                </TableCell>
+                <TableCell className="font-semibold">
                   {user.username || 'Anonymous'}
                   {isCurrentUser && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>}
-                </td>
-                <td className="py-3 px-4 text-right font-mono">
-                  {user.correct_answers || 0}<span className="text-muted-foreground text-xs">/50</span>
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {score}<span className="text-muted-foreground text-xs">/50</span>
+                </TableCell>
+                <TableCell className="text-right">
+                  {isCompleted ? (
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Completed</span>
+                  ) : (
+                    <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                      Level {user.level || 1}
+                    </span>
+                  )}
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

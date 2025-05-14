@@ -36,6 +36,9 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
     setIsCorrect(correct);
     setHasSubmitted(true);
     
+    // Log the answer result for debugging
+    console.log(`Question answered: ${correct ? 'CORRECT' : 'INCORRECT'} (selected=${selectedOption}, correct=${question.correct_answer})`);
+    
     if (correct) {
       // Play a small success sound or effect
       const audio = new Audio("/success.mp3");
@@ -67,6 +70,7 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
         setTimeLeft(timeLeft - 1);
       }, 1000);
     } else if (timeLeft === 0) {
+      // Pass the correct flag to the parent component
       onAnswerSubmit(isCorrect);
       setSelectedOption(null);
       setHasSubmitted(false);

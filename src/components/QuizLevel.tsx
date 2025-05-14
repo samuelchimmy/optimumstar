@@ -33,9 +33,13 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   }, [level]);
 
   const handleAnswerSubmit = async (isCorrect: boolean) => {
+    // Log for debugging
+    console.log(`Answer submitted for question ${currentQuestionIndex + 1}: ${isCorrect ? 'correct' : 'incorrect'}`);
+    
     // Track correct answers only when the answer is correct
     if (isCorrect) {
       const newCorrectAnswers = correctAnswers + 1;
+      console.log(`Incrementing score from ${correctAnswers} to ${newCorrectAnswers}`);
       setCorrectAnswers(newCorrectAnswers);
       
       // Play a small success sound
@@ -51,6 +55,10 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       // Level completed - show the score for this level
       setCompleted(true);
       
+      // Log final score for this level
+      const finalScore = isCorrect ? correctAnswers + 1 : correctAnswers;
+      console.log(`Level ${level} completed with final score: ${finalScore}/10`);
+      
       // Play celebration music
       const audio = new Audio("/celebration.mp3");
       audio.volume = 0.5;
@@ -58,13 +66,13 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       
       // Pass the current level's score to the parent component
       // The parent (QuizPage) will handle accumulating the scores
-      onComplete(level + 1, correctAnswers);
+      onComplete(level, finalScore);
       
       // The database update will be handled in QuizPage.tsx, which has the complete
       // accumulated score for all levels
       toast({
         title: "Level Completed! 🎉",
-        description: `You scored ${correctAnswers} out of 10 on this level!`,
+        description: `You scored ${finalScore} out of 10 on this level!`,
       });
     }
   };
@@ -78,6 +86,9 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   }
 
   if (completed) {
+    // Calculate final score correctly including the last question
+    const finalLevelScore = correctAnswers;
+    
     return (
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-6">
@@ -85,12 +96,12 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             <Trophy className="h-6 w-6" /> Level {level} Completed! 🎉
           </span>
         </h2>
-        <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{correctAnswers} / 10</span></p>
+        <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{finalLevelScore} / 10</span></p>
         
         {level < 5 ? (
           <Button 
             className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
-            onClick={() => onComplete(level + 1, correctAnswers)}
+            onClick={() => onComplete(level + 1, finalLevelScore)}
           >
             Continue to Level {level + 1}
           </Button>
@@ -101,7 +112,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             </p>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
-              onClick={() => onComplete(level + 1, correctAnswers)}
+              onClick={() => onComplete(level + 1, finalLevelScore)}
             >
               See Your Final Score
             </Button>

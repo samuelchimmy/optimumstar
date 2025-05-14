@@ -309,6 +309,11 @@ export async function updateUserProgress(
       return false;
     }
     
+    console.log(`--------- UPDATING USER PROGRESS ---------`);
+    console.log(`User ID: ${userId}`);
+    console.log(`New Level: ${level}`);
+    console.log(`Total Accumulated Score: ${correctAnswers}`);
+    
     // Get current profile to correctly update total score
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -321,6 +326,12 @@ export async function updateUserProgress(
       return false;
     }
     
+    console.log('Current profile state:', {
+      currentLevel: existingProfile.level,
+      currentScore: existingProfile.correct_answers,
+      completed: existingProfile.quiz_completed
+    });
+    
     // If quiz is already completed, don't update anything
     if (existingProfile.quiz_completed) {
       console.log('Quiz already completed for user:', userId);
@@ -332,7 +343,7 @@ export async function updateUserProgress(
     // For final level completion (level > 5), set the total score and mark quiz as completed
     if (level > 5) {
       // This is the total accumulated score from all levels (out of 50)
-      console.log('Quiz completed, setting final total score:', correctAnswers);
+      console.log(`QUIZ COMPLETED - Setting final total score: ${correctAnswers}/50`);
       updates.correct_answers = correctAnswers;
       updates.quiz_completed = true;
     } else {
@@ -340,20 +351,24 @@ export async function updateUserProgress(
       // correctAnswers parameter is the accumulated total from all completed levels
       if (existingProfile.level && level > existingProfile.level) {
         updates.correct_answers = correctAnswers;
-        console.log(`Updated score for user at level ${level}: setting total to ${correctAnswers}`);
+        console.log(`Level progress - Setting accumulated score to: ${correctAnswers}`);
       }
     }
     
-    const { error } = await supabase
+    console.log('Applying database updates:', updates);
+    
+    const { error, data } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
     
     if (error) {
       console.error('Error updating user progress:', error);
       return false;
     }
     
+    console.log('User progress updated successfully. New profile state:', data);
     return true;
   } catch (error) {
     console.error('updateUserProgress error:', error);
