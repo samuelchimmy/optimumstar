@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -13,7 +12,9 @@ export interface UserProfile {
   avatar_url: string;
   level: number;
   correct_answers: number;
-  created_at: string; // Changed from optional to required to match the database type
+  created_at: string;
+  discord_username?: string;
+  twitter_username?: string;
 }
 
 export interface QuizQuestion {
@@ -107,6 +108,31 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
     return data;
   } catch (error) {
     console.error('createUserProfile error:', error);
+    return null;
+  }
+}
+
+// Update user profile
+export async function updateUserProfile(
+  userId: string,
+  profileData: Partial<Omit<UserProfile, 'id' | 'created_at'>>
+): Promise<UserProfile | null> {
+  try {
+    const { data, error } = await typedSupabase
+      .from('profiles')
+      .update(profileData)
+      .eq('id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating user profile:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('updateUserProfile error:', error);
     return null;
   }
 }

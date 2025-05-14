@@ -3,10 +3,17 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Twitter, Discord } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserProfile, UserProfile } from '../lib/supabase';
 
-export default function ProfileCard() {
+interface ProfileCardProps {
+  onEdit?: () => void;
+  editable?: boolean;
+}
+
+export default function ProfileCard({ onEdit, editable = false }: ProfileCardProps) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,8 +65,13 @@ export default function ProfileCard() {
 
   return (
     <Card className="w-full max-w-md mx-auto border border-secondary/30 shadow-lg">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 flex flex-row justify-between items-start">
         <CardTitle>Your Profile</CardTitle>
+        {editable && (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            Edit Profile
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center space-y-4">
@@ -73,6 +85,32 @@ export default function ProfileCard() {
           </Avatar>
           
           <h2 className="text-2xl font-bold">{profile.username}</h2>
+          
+          {/* Social Links */}
+          <div className="flex gap-4">
+            {profile.twitter_username && (
+              <a 
+                href={profile.twitter_username}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-1 text-blue-500 hover:text-blue-700 transition-colors"
+              >
+                <Twitter size={20} />
+                <span className="text-sm font-medium">
+                  @{profile.twitter_username.replace('https://x.com/', '')}
+                </span>
+              </a>
+            )}
+            
+            {profile.discord_username && (
+              <div className="flex items-center space-x-1 text-indigo-500">
+                <Discord size={20} />
+                <span className="text-sm font-medium">
+                  {profile.discord_username}
+                </span>
+              </div>
+            )}
+          </div>
           
           <div className="w-full space-y-2">
             <div className="flex justify-between text-sm">
