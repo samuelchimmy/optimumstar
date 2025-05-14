@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -44,6 +43,21 @@ export default function QuizPage() {
         if (profile.correct_answers) {
           setTotalScore(profile.correct_answers);
         }
+        
+        // Recreate level scores from the database if possible
+        // Note: This is an approximation since we don't store individual level scores
+        if (profile.level && profile.level > 1) {
+          const newLevelScores = [...levelScores];
+          const averageScore = profile.correct_answers ? Math.floor(profile.correct_answers / (profile.level - 1)) : 0;
+          
+          // Fill completed levels with the average score as an approximation
+          for (let i = 0; i < profile.level - 1; i++) {
+            newLevelScores[i] = averageScore;
+          }
+          
+          setLevelScores(newLevelScores);
+          console.log('Approximated level scores:', newLevelScores);
+        }
       } else {
         // Default to level 1 if profile not found
         setCurrentLevel(1);
@@ -61,13 +75,17 @@ export default function QuizPage() {
   };
   
   const handleLevelComplete = (nextLevel: number, score: number) => {
+    console.log(`Level ${currentLevel} completed with score: ${score}/10`);
+    
     // Store the score for this level
     const updatedScores = [...levelScores];
     updatedScores[currentLevel! - 1] = score;
     setLevelScores(updatedScores);
     
-    // Calculate total score so far
+    // Calculate total score so far (sum of all level scores)
     const newTotalScore = updatedScores.reduce((sum, score) => sum + score, 0);
+    console.log(`Updated level scores: ${updatedScores.join(', ')}`);
+    console.log(`New total score: ${newTotalScore}/50 (sum of all levels)`);
     setTotalScore(newTotalScore);
     
     // Check if we've completed all levels
@@ -93,7 +111,7 @@ export default function QuizPage() {
       
       // Also update the progressive score in the database
       if (user) {
-        console.log('Level completed - updating progressive score in database:', newTotalScore);
+        console.log(`Level ${currentLevel} completed - updating progressive score in database:`, newTotalScore);
         updateUserProgress(user.id, nextLevel, newTotalScore);
       }
     }

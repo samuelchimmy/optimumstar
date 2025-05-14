@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -332,14 +331,13 @@ export async function updateUserProgress(
     
     // For final level completion (level > 5), set the total score and mark quiz as completed
     if (level > 5) {
-      // This is the key change - correctAnswers is the TOTAL score (out of 50)
+      // This is the total accumulated score from all levels (out of 50)
       console.log('Quiz completed, setting final total score:', correctAnswers);
       updates.correct_answers = correctAnswers;
       updates.quiz_completed = true;
     } else {
       // For level progress (not completing the entire quiz),
-      // Use the correctAnswers parameter which should be the accumulated total
-      // from the QuizPage component
+      // correctAnswers parameter is the accumulated total from all completed levels
       if (existingProfile.level && level > existingProfile.level) {
         updates.correct_answers = correctAnswers;
         console.log(`Updated score for user at level ${level}: setting total to ${correctAnswers}`);
