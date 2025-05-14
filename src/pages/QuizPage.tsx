@@ -187,7 +187,7 @@ export default function QuizPage() {
               
               <div className="text-xl mt-4">
                 {totalScore >= 45 && (
-                  <p className="text-green-600">Outstanding! You're a blockchain genius! 🏆</p>
+                  <p className="text-green-600">Outstanding! You're a blockchain genius! ����</p>
                 )}
                 {totalScore >= 30 && totalScore < 45 && (
                   <p className="text-primary">Great job! You know your Succinct stuff! 🌟</p>
