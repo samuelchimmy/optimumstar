@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -17,9 +18,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
-  const [retryAttempt, setRetryAttempt] = useState(0);
-  const maxRetries = 3;
-  
+
   useEffect(() => {
     if (!authLoading && !user) {
       // Not logged in, redirect to login
@@ -37,104 +36,71 @@ export default function ProfilePage() {
         
         console.log('Fetching profile for user ID:', user.id);
         
-        // Try direct fetch first
-        const { data: directProfileCheck, error: directError } = await supabase
+        // Check if profile exists
+        const { data: existingProfile, error: fetchError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .maybeSingle();
+          .single();
         
-        // If direct fetch worked, use that data
-        if (!directError && directProfileCheck) {
-          console.log('Direct profile query successful:', directProfileCheck);
-          setProfile(directProfileCheck);
-          setProfileError(false);
-          setProfileLoading(false);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          // Error other than "no rows returned"
+          console.error('Error fetching profile:', fetchError);
+          throw fetchError;
+        }
+        
+        if (existingProfile) {
+          console.log('Profile found:', existingProfile);
+          setProfile(existingProfile);
           return;
         }
         
-        // If direct fetch failed or returned no data, try our helper function
-        const userProfile = await fetchUserProfile(user.id);
-        console.log('Profile data received:', userProfile);
+        console.log('No profile found, creating default profile');
         
-        if (userProfile) {
-          setProfile(userProfile);
-          setProfileError(false);
-        } else {
-          // Last attempt - try to create a profile directly
-          console.log('No profile found via helper, creating default directly');
-          
-          const defaultProfile: UserProfile = {
-            id: user.id,
-            username: user.email?.split('@')[0] || 'User',
-            avatar_url: '',
-            level: 1,
-            correct_answers: 0,
-            created_at: new Date().toISOString(),
-          };
-          
-          // Use upsert for better reliability
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .upsert([defaultProfile], {
-              onConflict: 'id',
-              ignoreDuplicates: false
-            })
-            .select()
-            .maybeSingle();
-          
-          if (createError) {
-            console.error('Error during direct profile creation:', createError);
-            
-            if (retryAttempt >= maxRetries - 1) {
-              setProfileError(true);
-              toast({
-                title: "Error creating profile",
-                description: "We couldn't create your profile. Please try again later.",
-                variant: "destructive"
-              });
-            } else {
-              setRetryAttempt(prev => prev + 1);
-            }
-          } else if (newProfile) {
-            console.log('Profile created successfully in final attempt:', newProfile);
-            setProfile(newProfile);
-            setProfileError(false);
-          } else {
-            console.error('Failed to create profile in final attempt');
-            setProfileError(true);
-            
-            if (retryAttempt >= maxRetries - 1) {
-              toast({
-                title: "Error loading profile",
-                description: "Unable to load your profile. Please try again later.",
-                variant: "destructive"
-              });
-            } else {
-              setRetryAttempt(prev => prev + 1);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-        setProfileError(true);
+        // Create default profile if not found
+        const defaultProfile: UserProfile = {
+          id: user.id,
+          username: user.email?.split('@')[0] || 'User',
+          avatar_url: '',
+          level: 1,
+          correct_answers: 0,
+          created_at: new Date().toISOString(),
+        };
         
-        if (retryAttempt >= maxRetries - 1) {
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([defaultProfile])
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Error creating profile:', createError);
           toast({
-            title: "Error loading profile",
-            description: "An error occurred while fetching your profile data.",
+            title: "Error creating profile",
+            description: "We couldn't create your profile. Please try again later.",
             variant: "destructive"
           });
-        } else {
-          setRetryAttempt(prev => prev + 1);
+          throw createError;
         }
+        
+        console.log('Profile created successfully:', newProfile);
+        setProfile(newProfile);
+        
+      } catch (error) {
+        console.error('Profile loading error:', error);
+        setProfileError(true);
+        toast({
+          title: "Error loading profile",
+          description: "An error occurred while fetching your profile data.",
+          variant: "destructive"
+        });
       } finally {
         setProfileLoading(false);
       }
     };
     
     loadProfile();
-  }, [user, authLoading, navigate, retryAttempt]);
+  }, [user, authLoading, navigate]);
   
   const handleEdit = () => {
     setIsEditing(true);
@@ -156,7 +122,6 @@ export default function ProfilePage() {
   const handleRetry = () => {
     setProfileLoading(true);
     setProfileError(false);
-    setRetryAttempt(prev => prev + 1);
   };
   
   return (
