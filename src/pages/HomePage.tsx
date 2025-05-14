@@ -44,7 +44,7 @@ export default function HomePage() {
             <span>Top Players</span>
           </h2>
           
-          <LeaderboardTable />
+          <LeaderboardTable currentUserId={user?.id || null} />
         </div>
       </div>
     </Layout>
