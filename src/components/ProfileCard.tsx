@@ -11,26 +11,44 @@ import { fetchUserProfile, UserProfile } from '../lib/supabase';
 interface ProfileCardProps {
   onEdit?: () => void;
   editable?: boolean;
+  loading?: boolean;
 }
 
-export default function ProfileCard({ onEdit, editable = false }: ProfileCardProps) {
+export default function ProfileCard({ onEdit, editable = false, loading = false }: ProfileCardProps) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(loading);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!user) return;
       
-      const userProfile = await fetchUserProfile(user.id);
-      setProfile(userProfile);
-      setLoading(false);
+      try {
+        console.log('ProfileCard: Loading profile for user ID:', user.id);
+        const userProfile = await fetchUserProfile(user.id);
+        console.log('ProfileCard: Profile data received:', userProfile);
+        
+        if (userProfile) {
+          setProfile(userProfile);
+        } else {
+          console.error('ProfileCard: No profile data returned');
+          setError(true);
+        }
+      } catch (err) {
+        console.error('ProfileCard: Error fetching user profile:', err);
+        setError(true);
+      } finally {
+        setProfileLoading(false);
+      }
     };
     
-    loadUserProfile();
-  }, [user]);
+    if (!loading) {
+      loadUserProfile();
+    }
+  }, [user, loading]);
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="pb-2">
@@ -38,15 +56,17 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 items-center">
-            <div className="animate-pulse bg-gray-200 h-24 w-24 rounded-full" />
-            <div className="animate-pulse bg-gray-200 h-6 w-40 rounded" />
+            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-24 w-24 rounded-full" />
+            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-40 rounded" />
+            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-full max-w-xs rounded" />
+            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-full max-w-xs rounded" />
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!profile) {
+  if (error || !profile) {
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="pb-2">
@@ -54,14 +74,14 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500">
-            Unable to load profile. Please try again later.
+            Unable to load profile. Please try again later or contact support if the issue persists.
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  const levelProgress = ((profile.level - 1) / 5) * 100;
+  const levelProgress = ((profile.level || 1) - 1) / 5 * 100;
 
   return (
     <Card className="w-full max-w-md mx-auto border border-secondary/30 shadow-lg">
@@ -76,15 +96,15 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
       <CardContent>
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24 border-2 border-primary">
-            <AvatarImage src={profile.avatar_url} alt={profile.username} />
+            <AvatarImage src={profile.avatar_url || ''} alt={profile.username || ''} />
             <AvatarFallback className="text-2xl">
               {profile.username && typeof profile.username === 'string' 
-                ? profile.username.slice(0, 2) 
+                ? profile.username.slice(0, 2).toUpperCase() 
                 : '??'}
             </AvatarFallback>
           </Avatar>
           
-          <h2 className="text-2xl font-bold">{profile.username}</h2>
+          <h2 className="text-2xl font-bold">{profile.username || 'Anonymous User'}</h2>
           
           {/* Social Links */}
           <div className="flex gap-4">
@@ -115,7 +135,7 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
           <div className="w-full space-y-2">
             <div className="flex justify-between text-sm">
               <span>Level Progress</span>
-              <span>{profile.level > 5 ? "Complete!" : `${profile.level}/5`}</span>
+              <span>{profile.level > 5 ? "Complete!" : `${profile.level || 0}/5`}</span>
             </div>
             <Progress value={levelProgress} className="h-2" />
           </div>
@@ -123,11 +143,11 @@ export default function ProfileCard({ onEdit, editable = false }: ProfileCardPro
           <div className="flex justify-around w-full">
             <div className="text-center">
               <p className="text-sm text-gray-500">Current Level</p>
-              <p className="text-2xl font-bold text-primary">{profile.level > 5 ? "Max" : profile.level}</p>
+              <p className="text-2xl font-bold text-primary">{profile.level > 5 ? "Max" : (profile.level || 0)}</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Correct Answers</p>
-              <p className="text-2xl font-bold text-primary">{profile.correct_answers}</p>
+              <p className="text-2xl font-bold text-primary">{profile.correct_answers || 0}</p>
             </div>
           </div>
           
