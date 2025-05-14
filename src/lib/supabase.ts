@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -100,7 +101,7 @@ async function createProfileAndFetch(userId: string, retriesLeft: number): Promi
       id: userId,
       username: username,
       avatar_url: '',
-      current_level: 1,
+      current_level: 0, // Changed from 1 to 0
       score: 0,
       created_at: new Date().toISOString(),
       quiz_completed: false,
@@ -185,7 +186,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         id: profile.id,
         username: profile.username || 'User',
         avatar_url: profile.avatar_url || '',
-        current_level: profile.current_level || 1,
+        current_level: profile.current_level || 0, // Changed from 1 to 0
         score: profile.score || 0,
         created_at: profile.created_at || new Date().toISOString(),
         quiz_completed: profile.quiz_completed || false,
@@ -230,7 +231,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         .maybeSingle();
       
       if (fallbackProfile) {
-        console.log('Found profile in error fallback:', fallbackProfile);
+        console.log('Found profile in fallback:', fallbackProfile);
         return fallbackProfile;
       }
     } catch (fallbackError) {
