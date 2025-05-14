@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { fetchLeaderboard, UserProfile } from '../lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from "@/hooks/use-toast";
 
 export default function LeaderboardTable() {
   const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
@@ -14,9 +15,20 @@ export default function LeaderboardTable() {
 
   useEffect(() => {
     const loadLeaderboard = async () => {
-      const data = await fetchLeaderboard();
-      setLeaderboard(data);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchLeaderboard();
+        setLeaderboard(data);
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load leaderboard data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadLeaderboard();
@@ -24,7 +36,12 @@ export default function LeaderboardTable() {
 
   const handleProfileClick = (playerId: string) => {
     if (!user) {
-      // If not logged in, redirect to login
+      // If not logged in, redirect to login with a helpful message
+      toast({
+        title: "Authentication Required",
+        description: "Please login to view user profiles",
+        duration: 3000,
+      });
       navigate('/login');
       return;
     }
@@ -57,10 +74,9 @@ export default function LeaderboardTable() {
             leaderboard.map((player, index) => (
               <TableRow 
                 key={player.id} 
-                className={index < 3 ? "bg-primary/5" : ""}
-                onClick={() => handleProfileClick(player.id)}
-                role="button"
-                style={{ cursor: 'pointer' }}
+                className={`${index < 3 ? "bg-primary/5" : ""} ${user ? "cursor-pointer hover:bg-muted" : ""}`}
+                onClick={() => user && handleProfileClick(player.id)}
+                role={user ? "button" : undefined}
               >
                 <TableCell className="font-medium text-center">
                   {index + 1}
@@ -74,7 +90,7 @@ export default function LeaderboardTable() {
                       <AvatarImage src={player.avatar_url || ''} alt={player.username || ''} />
                       <AvatarFallback>{player.username && typeof player.username === 'string' ? player.username.slice(0, 2) : '??'}</AvatarFallback>
                     </Avatar>
-                    <span className="hover:underline">{player.username}</span>
+                    <span className={user ? "hover:underline" : ""}>{player.username}</span>
                   </div>
                 </TableCell>
                 <TableCell>{player.level}</TableCell>
