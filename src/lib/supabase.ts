@@ -12,7 +12,7 @@ export interface UserProfile {
   avatar_url: string;
   level: number;
   correct_answers: number;
-  created_at?: string;
+  created_at: string; // Changed from optional to required to match the database type
 }
 
 export interface QuizQuestion {
