@@ -17,7 +17,7 @@ export interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
-  correct_option: number;
+  correct_answer: number;
   level: number;
 }
 
@@ -156,7 +156,7 @@ export async function fetchQuestions(level: number): Promise<QuizQuestion[]> {
       id: '1',
       question: `Level ${level} Question - Sample question text?`,
       options: ['Option A', 'Option B', 'Option C', 'Option D'],
-      correct_option: 0,
+      correct_answer: 0,
       level: level
     },
     // Additional mock questions would go here
