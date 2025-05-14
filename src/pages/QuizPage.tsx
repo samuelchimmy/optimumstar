@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -89,13 +88,7 @@ export default function QuizPage() {
     console.log(`New total score: ${newTotalScore}/50 (sum of all levels)`);
     setTotalScore(newTotalScore);
     
-    // Only allow advancing to next level if user got a perfect score (10/10)
-    if (!isPerfectScore) {
-      console.log("Level not passed with a perfect score. Must try again.");
-      // The retry button is handled in the QuizLevel component
-      return;
-    }
-    
+    // Allow advancing to next level regardless of score
     // Check if we've completed all levels
     if (levelCompleted > 5) {
       setQuizCompleted(true);
@@ -113,7 +106,7 @@ export default function QuizPage() {
         });
       }
     } else {
-      // Continue to next level (only if perfect score was achieved)
+      // Continue to next level regardless of score
       setCurrentLevel(levelCompleted);
       setIsStarted(true);
       
@@ -239,7 +232,7 @@ export default function QuizPage() {
             <p className="text-lg mb-8">
               Answer all 10 questions in each level to test your knowledge.
               There are 5 levels with 10 questions each, for a total of 50 points.
-              You must get all 10 questions correct to advance to the next level!
+              Your scores will be tracked for each level!
             </p>
             
             <Button 
