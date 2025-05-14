@@ -1,9 +1,11 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 
-export { supabase };
+export { supabase } from '@/integrations/supabase/client';
 
+// Define our own types that match our actual database structure
+// These will be used instead of the generated types which are currently empty
 export interface UserProfile {
   id: string;
   username: string;
@@ -21,10 +23,29 @@ export interface QuizQuestion {
   level: number;
 }
 
+// Extended Database type with our custom tables
+interface ExtendedDatabase extends Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: UserProfile;
+        Insert: Omit<UserProfile, 'created_at'>;
+        Update: Partial<UserProfile>;
+      };
+    };
+  };
+}
+
+// Create a typed client
+const typedSupabase = createClient<ExtendedDatabase>(
+  "https://wwxmmwolrgrgcziigkil.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3eG1td29scmdyZ2N6aWlna2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxODkzNzYsImV4cCI6MjA2Mjc2NTM3Nn0.YG-ghxb1uX2IZo5kQJFMhtXMg8hTF2Z3pHU-s5LBsSE"
+);
+
 // Fetch a user profile by ID
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -35,7 +56,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       return null;
     }
     
-    return data as unknown as UserProfile;
+    return data;
   } catch (error) {
     console.error('getUserProfile error:', error);
     return null;
@@ -49,19 +70,25 @@ export const fetchUserProfile = getUserProfile;
 export async function createUserProfile(profile: UserProfile): Promise<UserProfile | null> {
   try {
     // Check if profile already exists
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await typedSupabase
       .from('profiles')
       .select('*')
       .eq('id', profile.id)
       .single();
     
     if (existingProfile) {
-      return existingProfile as unknown as UserProfile;
+      return existingProfile;
     }
     
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('profiles')
-      .insert([profile as any])
+      .insert([{
+        id: profile.id,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
+        level: profile.level,
+        correct_answers: profile.correct_answers
+      }])
       .select()
       .single();
     
@@ -70,7 +97,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
       return null;
     }
     
-    return data as unknown as UserProfile;
+    return data;
   } catch (error) {
     console.error('createUserProfile error:', error);
     return null;
@@ -84,9 +111,9 @@ export async function updateUserProgress(
   correctAnswers: number
 ): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await typedSupabase
       .from('profiles')
-      .update({ level, correct_answers: correctAnswers } as any)
+      .update({ level, correct_answers: correctAnswers })
       .eq('id', userId);
     
     if (error) {
@@ -104,7 +131,7 @@ export async function updateUserProgress(
 // Fetch leaderboard data (top 10 users by correct answers)
 export async function getLeaderboard(): Promise<UserProfile[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('profiles')
       .select('*')
       .order('correct_answers', { ascending: false })
@@ -115,7 +142,7 @@ export async function getLeaderboard(): Promise<UserProfile[]> {
       return [];
     }
     
-    return data as unknown as UserProfile[];
+    return data;
   } catch (error) {
     console.error('getLeaderboard error:', error);
     return [];
@@ -128,7 +155,7 @@ export const fetchLeaderboard = getLeaderboard;
 // Get user ranking on leaderboard
 export async function getUserRanking(userId: string): Promise<number> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('profiles')
       .select('id')
       .order('correct_answers', { ascending: false });
@@ -138,7 +165,7 @@ export async function getUserRanking(userId: string): Promise<number> {
       return 0;
     }
     
-    const userIndex = data.findIndex(user => (user as any).id === userId);
+    const userIndex = data.findIndex(user => user.id === userId);
     return userIndex !== -1 ? userIndex + 1 : 0;
   } catch (error) {
     console.error('getUserRanking error:', error);
