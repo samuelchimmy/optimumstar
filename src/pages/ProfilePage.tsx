@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -9,9 +8,10 @@ import { UserProfile, fetchUserProfile, createUserProfile, updateUserProfile } f
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const maxRetries = 3;
   
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       // Not logged in, redirect to login
       navigate('/login');
       return;
@@ -36,13 +36,34 @@ export default function ProfilePage() {
         setProfileError(false);
         
         console.log('Fetching profile for user ID:', user.id);
-        // Try to get existing profile
-        let userProfile = await fetchUserProfile(user.id);
+        
+        // Try direct fetch first
+        const { data: directProfileCheck, error: directError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        // If direct fetch worked, use that data
+        if (!directError && directProfileCheck) {
+          console.log('Direct profile query successful:', directProfileCheck);
+          setProfile(directProfileCheck);
+          setProfileError(false);
+          setProfileLoading(false);
+          return;
+        }
+        
+        // If direct fetch failed or returned no data, try our helper function
+        const userProfile = await fetchUserProfile(user.id);
         console.log('Profile data received:', userProfile);
         
-        // If profile not found, create a default profile
-        if (!userProfile) {
-          console.log('Profile not found, creating default profile for user:', user.id);
+        if (userProfile) {
+          setProfile(userProfile);
+          setProfileError(false);
+        } else {
+          // Last attempt - try to create a profile directly
+          console.log('No profile found via helper, creating default directly');
+          
           const defaultProfile: UserProfile = {
             id: user.id,
             username: user.email?.split('@')[0] || 'User',
@@ -52,71 +73,52 @@ export default function ProfilePage() {
             created_at: new Date().toISOString(),
           };
           
-          try {
-            // Try to create profile
-            userProfile = await createUserProfile(defaultProfile);
-            console.log('Default profile created:', userProfile);
-            
-            // If creation didn't return a profile but didn't throw an error,
-            // try fetching again as it might have been created
-            if (!userProfile) {
-              console.log('Retrying profile fetch after creation attempt');
-              // Small delay to allow database to update
-              await new Promise(resolve => setTimeout(resolve, 800));
-              userProfile = await fetchUserProfile(user.id);
-              console.log('Retry fetch result:', userProfile);
-            }
-          } catch (createError) {
-            console.error('Error creating profile:', createError);
-            
-            // Try updating instead - this might work if the profile exists but creation failed due to RLS
-            try {
-              const updateResult = await updateUserProfile(user.id, {
-                username: user.email?.split('@')[0] || 'User',
-                avatar_url: '',
-                level: 1,
-                correct_answers: 0
-              });
-              
-              if (updateResult) {
-                userProfile = updateResult;
-                console.log('Profile updated instead of created:', userProfile);
-              } else {
-                // Try fetching one more time
-                await new Promise(resolve => setTimeout(resolve, 800));
-                userProfile = await fetchUserProfile(user.id);
-                console.log('Final retry fetch result after update attempt:', userProfile);
-              }
-            } catch (updateError) {
-              console.error('Error updating profile:', updateError);
-            }
-          }
-        }
-        
-        if (userProfile) {
-          setProfile(userProfile);
-          setProfileError(false);
-        } else {
-          console.error('Failed to load or create profile');
-          setProfileError(true);
+          // Use upsert for better reliability
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .upsert([defaultProfile], {
+              onConflict: 'id',
+              ignoreDuplicates: false
+            })
+            .select()
+            .maybeSingle();
           
-          // Only show toast if we've exhausted retries
-          if (retryAttempt >= maxRetries - 1) {
-            toast({
-              title: "Error loading profile",
-              description: "Unable to load your profile. Please try again later.",
-              variant: "destructive"
-            });
+          if (createError) {
+            console.error('Error during direct profile creation:', createError);
+            
+            if (retryAttempt >= maxRetries - 1) {
+              setProfileError(true);
+              toast({
+                title: "Error creating profile",
+                description: "We couldn't create your profile. Please try again later.",
+                variant: "destructive"
+              });
+            } else {
+              setRetryAttempt(prev => prev + 1);
+            }
+          } else if (newProfile) {
+            console.log('Profile created successfully in final attempt:', newProfile);
+            setProfile(newProfile);
+            setProfileError(false);
           } else {
-            // Increment retry counter
-            setRetryAttempt(prev => prev + 1);
+            console.error('Failed to create profile in final attempt');
+            setProfileError(true);
+            
+            if (retryAttempt >= maxRetries - 1) {
+              toast({
+                title: "Error loading profile",
+                description: "Unable to load your profile. Please try again later.",
+                variant: "destructive"
+              });
+            } else {
+              setRetryAttempt(prev => prev + 1);
+            }
           }
         }
       } catch (error) {
         console.error('Error loading profile:', error);
         setProfileError(true);
         
-        // Only show toast if we've exhausted retries
         if (retryAttempt >= maxRetries - 1) {
           toast({
             title: "Error loading profile",
@@ -124,7 +126,6 @@ export default function ProfilePage() {
             variant: "destructive"
           });
         } else {
-          // Increment retry counter
           setRetryAttempt(prev => prev + 1);
         }
       } finally {
@@ -133,7 +134,7 @@ export default function ProfilePage() {
     };
     
     loadProfile();
-  }, [user, loading, navigate, retryAttempt]);
+  }, [user, authLoading, navigate, retryAttempt]);
   
   const handleEdit = () => {
     setIsEditing(true);

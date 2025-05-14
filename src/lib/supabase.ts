@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -27,7 +26,7 @@ export interface QuizQuestion {
   level: number;
 }
 
-// Fetch a user profile by ID with improved error handling and retry mechanism
+// Improved function to fetch user profiles with better error handling
 export async function getUserProfile(userId: string, retries = 2): Promise<UserProfile | null> {
   try {
     console.log('getUserProfile called for user ID:', userId);
@@ -37,14 +36,32 @@ export async function getUserProfile(userId: string, retries = 2): Promise<UserP
       return null;
     }
     
-    const { data, error } = await supabase
+    // Try to get existing profile with a timeout
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), 5000); // 5 second timeout
+    });
+    
+    const fetchPromise = supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
     
+    // Race between fetch and timeout
+    const { data, error } = await Promise.race([
+      fetchPromise,
+      timeoutPromise.then(() => ({ data: null, error: new Error('Request timed out') }))
+    ]) as any;
+    
     if (error) {
       console.error('Error fetching user profile:', error);
+      
+      // If we have retries left, try creating a profile and then fetch again
+      if (retries > 0) {
+        console.log(`Retrying profile fetch (${retries} attempts left)`);
+        return await createProfileAndFetch(userId, retries - 1);
+      }
+      
       return null;
     }
     
@@ -53,44 +70,81 @@ export async function getUserProfile(userId: string, retries = 2): Promise<UserP
     // If no profile was found and we have retries left, create one and try again
     if (!data && retries > 0) {
       console.log('No profile found, attempting to create one...');
-      const defaultProfile: UserProfile = {
-        id: userId,
-        username: 'User',
-        avatar_url: '',
-        level: 1,
-        correct_answers: 0,
-        created_at: new Date().toISOString(),
-      };
-      
-      try {
-        await createUserProfile(defaultProfile);
-        // Brief delay to allow database to update
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Retry with one less retry attempt
-        return getUserProfile(userId, retries - 1);
-      } catch (createError) {
-        console.error('Error creating profile in getUserProfile:', createError);
-        
-        // If creation fails, try to update in case the profile exists but is incomplete
-        try {
-          await updateUserProfile(userId, {
-            username: 'User',
-            avatar_url: '',
-            level: 1,
-            correct_answers: 0
-          });
-          
-          await new Promise(resolve => setTimeout(resolve, 500));
-          return getUserProfile(userId, 0); // Final attempt
-        } catch (updateError) {
-          console.error('Error updating profile in getUserProfile:', updateError);
-        }
-      }
+      return await createProfileAndFetch(userId, retries - 1);
     }
     
     return data;
   } catch (error) {
     console.error('getUserProfile error:', error);
+    
+    // Last attempt to create and fetch profile
+    if (retries > 0) {
+      return createProfileAndFetch(userId, 0);
+    }
+    
+    return null;
+  }
+}
+
+// Helper function to create a profile and fetch it
+async function createProfileAndFetch(userId: string, retriesLeft: number): Promise<UserProfile | null> {
+  try {
+    // Get user details to set username properly
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData?.user?.email || '';
+    const username = email.split('@')[0] || 'User';
+    
+    const defaultProfile: UserProfile = {
+      id: userId,
+      username: username,
+      avatar_url: '',
+      level: 1,
+      correct_answers: 0,
+      created_at: new Date().toISOString(),
+    };
+    
+    console.log('Creating default profile:', defaultProfile);
+    
+    // Use upsert to avoid conflicts if profile was created in parallel
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert([defaultProfile], {
+        onConflict: 'id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error creating profile:', error);
+      
+      // Brief delay to allow database to update in case it was created elsewhere
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Try fetching one more time
+      const { data: retryData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      return retryData;
+    }
+    
+    if (data) {
+      console.log('Profile created or updated successfully:', data);
+      return data;
+    }
+    
+    // If still no data, try one last fetch if we have retries left
+    if (retriesLeft > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return getUserProfile(userId, 0);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('createProfileAndFetch error:', error);
     return null;
   }
 }
@@ -120,17 +174,20 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
       return existingProfile;
     }
     
-    // Create new profile with proper error handling for RLS
+    // Create new profile using upsert for better reliability
     const { data, error } = await supabase
       .from('profiles')
-      .insert([{
+      .upsert([{
         id: profile.id,
         username: profile.username || 'User',
         avatar_url: profile.avatar_url || '',
         level: profile.level || 1,
         correct_answers: profile.correct_answers || 0,
         created_at: profile.created_at || new Date().toISOString()
-      }])
+      }], {
+        onConflict: 'id',
+        ignoreDuplicates: false
+      })
       .select()
       .maybeSingle();
     
@@ -138,7 +195,6 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
       console.error('Error creating user profile:', error);
       
       // If error happens, try to fetch one more time in case it was created in parallel
-      // This helps with race conditions where multiple components try to create a profile
       await new Promise(resolve => setTimeout(resolve, 800));
       const { data: retryProfile } = await supabase
         .from('profiles')
@@ -151,26 +207,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         return retryProfile;
       }
       
-      // If still not found, try to upsert instead
-      const { data: upsertProfile, error: upsertError } = await supabase
-        .from('profiles')
-        .upsert([{
-          id: profile.id,
-          username: profile.username || 'User',
-          avatar_url: profile.avatar_url || '',
-          level: profile.level || 1,
-          correct_answers: profile.correct_answers || 0,
-          created_at: profile.created_at || new Date().toISOString()
-        }])
-        .select()
-        .maybeSingle();
-        
-      if (upsertError) {
-        console.error('Failed to upsert profile after error:', upsertError);
-        return null;
-      }
-      
-      return upsertProfile;
+      return null;
     }
     
     console.log('Profile created successfully:', data);
