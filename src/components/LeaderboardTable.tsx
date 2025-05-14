@@ -7,7 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from "@/components/ui/use-toast";
 
-export default function LeaderboardTable() {
+interface LeaderboardTableProps {
+  currentUserId: string | null;
+}
+
+export default function LeaderboardTable({ currentUserId = null }: LeaderboardTableProps) {
   const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -74,7 +78,7 @@ export default function LeaderboardTable() {
             leaderboard.map((player, index) => (
               <TableRow 
                 key={player.id} 
-                className={`${index < 3 ? "bg-primary/5" : ""} ${user ? "cursor-pointer hover:bg-muted" : ""}`}
+                className={`${index < 3 ? "bg-primary/5" : ""} ${player.id === currentUserId ? "bg-secondary/20" : ""} ${user ? "cursor-pointer hover:bg-muted" : ""}`}
                 onClick={() => user && handleProfileClick(player.id)}
                 role={user ? "button" : undefined}
               >
@@ -83,6 +87,7 @@ export default function LeaderboardTable() {
                   {index === 0 && " 🏆"}
                   {index === 1 && " 🥈"}
                   {index === 2 && " 🥉"}
+                  {player.id === currentUserId && " (You)"}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -90,7 +95,10 @@ export default function LeaderboardTable() {
                       <AvatarImage src={player.avatar_url || ''} alt={player.username || ''} />
                       <AvatarFallback>{player.username && typeof player.username === 'string' ? player.username.slice(0, 2) : '??'}</AvatarFallback>
                     </Avatar>
-                    <span className={user ? "hover:underline" : ""}>{player.username}</span>
+                    <span className={`${player.id === currentUserId ? "font-bold" : ""} ${user ? "hover:underline" : ""}`}>
+                      {player.username}
+                      {player.id === currentUserId && " (You)"}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>{player.level}</TableCell>

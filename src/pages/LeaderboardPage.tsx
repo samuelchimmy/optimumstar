@@ -1,10 +1,34 @@
 
+import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserRanking } from '../lib/supabase';
+import { toast } from "@/components/ui/use-toast";
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
+  const [userRank, setUserRank] = useState<number | null>(null);
+  
+  useEffect(() => {
+    // Fetch user's rank if they're logged in
+    const fetchUserRank = async () => {
+      if (user && user.id) {
+        try {
+          const rank = await getUserRanking(user.id);
+          setUserRank(rank);
+        } catch (error) {
+          console.error('Error fetching user rank:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load your ranking data"
+          });
+        }
+      }
+    };
+    
+    fetchUserRank();
+  }, [user]);
   
   return (
     <Layout>
@@ -19,8 +43,16 @@ export default function LeaderboardPage() {
           </p>
         )}
         
+        {user && userRank !== null && userRank > 0 && (
+          <div className="text-center mb-6">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+              Your current rank: #{userRank}
+            </span>
+          </div>
+        )}
+        
         <div className="max-w-4xl mx-auto">
-          <LeaderboardTable />
+          <LeaderboardTable currentUserId={user?.id || null} />
         </div>
       </div>
     </Layout>
