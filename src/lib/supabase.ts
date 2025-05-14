@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
 
-// Export the already created supabase client to avoid duplicate instances
-export { supabase } from '@/integrations/supabase/client';
+// Import the supabase client from the integrations folder
+import { supabase } from '@/integrations/supabase/client';
 
 // Define our own types that match our actual database structure
 // These will be used instead of the generated types which are currently empty
@@ -27,19 +27,15 @@ export interface QuizQuestion {
   level: number;
 }
 
-// Create a typed client - use only for types, not for actual requests
-const typedSupabase = createClient<Database>(
-  "https://wwxmmwolrgrgcziigkil.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3eG1td29scmdyZ2N6aWlna2lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxODkzNzYsImV4cCI6MjA2Mjc2NTM3Nn0.YG-ghxb1uX2IZo5kQJFMhtXMg8hTF2Z3pHU-s5LBsSE"
-);
-
-// Import the supabase client 
-import { supabase } from '@/integrations/supabase/client';
-
 // Fetch a user profile by ID with improved error handling and retry mechanism
 export async function getUserProfile(userId: string, retries = 2): Promise<UserProfile | null> {
   try {
     console.log('getUserProfile called for user ID:', userId);
+    
+    if (!userId) {
+      console.error('getUserProfile: No user ID provided');
+      return null;
+    }
     
     const { data, error } = await supabase
       .from('profiles')
@@ -66,11 +62,30 @@ export async function getUserProfile(userId: string, retries = 2): Promise<UserP
         created_at: new Date().toISOString(),
       };
       
-      await createUserProfile(defaultProfile);
-      // Brief delay to allow database to update
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Retry with one less retry attempt
-      return getUserProfile(userId, retries - 1);
+      try {
+        await createUserProfile(defaultProfile);
+        // Brief delay to allow database to update
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Retry with one less retry attempt
+        return getUserProfile(userId, retries - 1);
+      } catch (createError) {
+        console.error('Error creating profile in getUserProfile:', createError);
+        
+        // If creation fails, try to update in case the profile exists but is incomplete
+        try {
+          await updateUserProfile(userId, {
+            username: 'User',
+            avatar_url: '',
+            level: 1,
+            correct_answers: 0
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return getUserProfile(userId, 0); // Final attempt
+        } catch (updateError) {
+          console.error('Error updating profile in getUserProfile:', updateError);
+        }
+      }
     }
     
     return data;
@@ -87,6 +102,11 @@ export const fetchUserProfile = getUserProfile;
 export async function createUserProfile(profile: UserProfile): Promise<UserProfile | null> {
   try {
     console.log('createUserProfile called with:', profile);
+    
+    if (!profile.id) {
+      console.error('createUserProfile: No user ID provided');
+      return null;
+    }
     
     // Check if profile already exists to avoid duplicate creation attempts
     const { data: existingProfile } = await supabase
@@ -119,7 +139,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
       
       // If error happens, try to fetch one more time in case it was created in parallel
       // This helps with race conditions where multiple components try to create a profile
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       const { data: retryProfile } = await supabase
         .from('profiles')
         .select('*')
@@ -131,8 +151,26 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         return retryProfile;
       }
       
-      console.error('Failed to create or find profile after error:', error);
-      return null;
+      // If still not found, try to upsert instead
+      const { data: upsertProfile, error: upsertError } = await supabase
+        .from('profiles')
+        .upsert([{
+          id: profile.id,
+          username: profile.username || 'User',
+          avatar_url: profile.avatar_url || '',
+          level: profile.level || 1,
+          correct_answers: profile.correct_answers || 0,
+          created_at: profile.created_at || new Date().toISOString()
+        }])
+        .select()
+        .maybeSingle();
+        
+      if (upsertError) {
+        console.error('Failed to upsert profile after error:', upsertError);
+        return null;
+      }
+      
+      return upsertProfile;
     }
     
     console.log('Profile created successfully:', data);
@@ -166,18 +204,51 @@ export async function updateUserProfile(
   profileData: Partial<Omit<UserProfile, 'id' | 'created_at'>>
 ): Promise<UserProfile | null> {
   try {
+    console.log('updateUserProfile called for user:', userId, 'with data:', profileData);
+    
+    if (!userId) {
+      console.error('updateUserProfile: No user ID provided');
+      return null;
+    }
+    
+    // Check if profile exists first
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (!existingProfile) {
+      console.log('Profile does not exist, creating new profile');
+      // Create a new profile with the provided data
+      const defaultProfile: UserProfile = {
+        id: userId,
+        username: profileData.username || 'User',
+        avatar_url: profileData.avatar_url || '',
+        level: profileData.level || 1,
+        correct_answers: profileData.correct_answers || 0,
+        created_at: new Date().toISOString(),
+        discord_username: profileData.discord_username,
+        twitter_username: profileData.twitter_username,
+      };
+      
+      return createUserProfile(defaultProfile);
+    }
+    
+    // Update existing profile
     const { data, error } = await supabase
       .from('profiles')
       .update(profileData)
       .eq('id', userId)
       .select()
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error updating user profile:', error);
       return null;
     }
     
+    console.log('Profile updated successfully:', data);
     return data;
   } catch (error) {
     console.error('updateUserProfile error:', error);
@@ -192,6 +263,11 @@ export async function updateUserProgress(
   correctAnswers: number
 ): Promise<boolean> {
   try {
+    if (!userId) {
+      console.error('updateUserProgress: No user ID provided');
+      return false;
+    }
+    
     const { error } = await supabase
       .from('profiles')
       .update({ level, correct_answers: correctAnswers })

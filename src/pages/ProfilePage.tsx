@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import ProfileCard from '../components/ProfileCard';
 import EditProfileForm from '../components/EditProfileForm';
 import { useAuth } from '../contexts/AuthContext';
-import { UserProfile, fetchUserProfile, createUserProfile } from '../lib/supabase';
+import { UserProfile, fetchUserProfile, createUserProfile, updateUserProfile } from '../lib/supabase';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -24,90 +24,115 @@ export default function ProfilePage() {
     if (!loading && !user) {
       // Not logged in, redirect to login
       navigate('/login');
-    } else if (user) {
-      // Load user profile
-      const loadProfile = async () => {
-        try {
-          setProfileLoading(true);
-          setProfileError(false);
+      return;
+    } 
+    
+    if (!user) return; // Exit if no user (still loading)
+    
+    // Load user profile
+    const loadProfile = async () => {
+      try {
+        setProfileLoading(true);
+        setProfileError(false);
+        
+        console.log('Fetching profile for user ID:', user.id);
+        // Try to get existing profile
+        let userProfile = await fetchUserProfile(user.id);
+        console.log('Profile data received:', userProfile);
+        
+        // If profile not found, create a default profile
+        if (!userProfile) {
+          console.log('Profile not found, creating default profile for user:', user.id);
+          const defaultProfile: UserProfile = {
+            id: user.id,
+            username: user.email?.split('@')[0] || 'User',
+            avatar_url: '',
+            level: 1,
+            correct_answers: 0,
+            created_at: new Date().toISOString(),
+          };
           
-          console.log('Fetching profile for user ID:', user.id);
-          let userProfile = await fetchUserProfile(user.id);
-          console.log('Profile data received:', userProfile);
-          
-          // If profile not found, create a default profile
-          if (!userProfile) {
-            console.log('Profile not found, creating default profile for user:', user.id);
-            const defaultProfile: UserProfile = {
-              id: user.id,
-              username: user.email?.split('@')[0] || 'User',
-              avatar_url: '',
-              level: 1,
-              correct_answers: 0,
-              created_at: new Date().toISOString(),
-            };
+          try {
+            // Try to create profile
+            userProfile = await createUserProfile(defaultProfile);
+            console.log('Default profile created:', userProfile);
             
-            try {
-              userProfile = await createUserProfile(defaultProfile);
-              console.log('Default profile created:', userProfile);
-              
-              // If creation failed, try fetching again as it might have been created in another component
-              if (!userProfile) {
-                console.log('Retrying profile fetch after creation attempt');
-                // Small delay to allow database to update
-                await new Promise(resolve => setTimeout(resolve, 500));
-                userProfile = await fetchUserProfile(user.id);
-                console.log('Retry fetch result:', userProfile);
-              }
-            } catch (createError) {
-              console.error('Error creating profile:', createError);
-              // Try fetching one more time in case it was created elsewhere
-              await new Promise(resolve => setTimeout(resolve, 500));
+            // If creation didn't return a profile but didn't throw an error,
+            // try fetching again as it might have been created
+            if (!userProfile) {
+              console.log('Retrying profile fetch after creation attempt');
+              // Small delay to allow database to update
+              await new Promise(resolve => setTimeout(resolve, 800));
               userProfile = await fetchUserProfile(user.id);
+              console.log('Retry fetch result:', userProfile);
             }
-          }
-          
-          if (userProfile) {
-            setProfile(userProfile);
-            setProfileError(false);
-          } else {
-            console.error('Failed to load or create profile');
-            setProfileError(true);
+          } catch (createError) {
+            console.error('Error creating profile:', createError);
             
-            // Only show toast if we've exhausted retries
-            if (retryAttempt >= maxRetries - 1) {
-              toast({
-                title: "Error loading profile",
-                description: "Unable to load your profile. Please try again later.",
-                variant: "destructive"
+            // Try updating instead - this might work if the profile exists but creation failed due to RLS
+            try {
+              const updateResult = await updateUserProfile(user.id, {
+                username: user.email?.split('@')[0] || 'User',
+                avatar_url: '',
+                level: 1,
+                correct_answers: 0
               });
-            } else {
-              // Increment retry counter
-              setRetryAttempt(prev => prev + 1);
+              
+              if (updateResult) {
+                userProfile = updateResult;
+                console.log('Profile updated instead of created:', userProfile);
+              } else {
+                // Try fetching one more time
+                await new Promise(resolve => setTimeout(resolve, 800));
+                userProfile = await fetchUserProfile(user.id);
+                console.log('Final retry fetch result after update attempt:', userProfile);
+              }
+            } catch (updateError) {
+              console.error('Error updating profile:', updateError);
             }
           }
-        } catch (error) {
-          console.error('Error loading profile:', error);
+        }
+        
+        if (userProfile) {
+          setProfile(userProfile);
+          setProfileError(false);
+        } else {
+          console.error('Failed to load or create profile');
           setProfileError(true);
           
           // Only show toast if we've exhausted retries
           if (retryAttempt >= maxRetries - 1) {
             toast({
               title: "Error loading profile",
-              description: "An error occurred while fetching your profile data.",
+              description: "Unable to load your profile. Please try again later.",
               variant: "destructive"
             });
           } else {
             // Increment retry counter
             setRetryAttempt(prev => prev + 1);
           }
-        } finally {
-          setProfileLoading(false);
         }
-      };
-      
-      loadProfile();
-    }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        setProfileError(true);
+        
+        // Only show toast if we've exhausted retries
+        if (retryAttempt >= maxRetries - 1) {
+          toast({
+            title: "Error loading profile",
+            description: "An error occurred while fetching your profile data.",
+            variant: "destructive"
+          });
+        } else {
+          // Increment retry counter
+          setRetryAttempt(prev => prev + 1);
+        }
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    
+    loadProfile();
   }, [user, loading, navigate, retryAttempt]);
   
   const handleEdit = () => {
