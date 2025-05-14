@@ -63,7 +63,7 @@ export default function Layout({ children }: LayoutProps) {
       
       <footer className="bg-dark text-light p-4 text-center">
         <div className="container mx-auto">
-          <p>Built with ❤️ by jadeofwallstreet</p>
+          <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
         </div>
       </footer>
     </div>
