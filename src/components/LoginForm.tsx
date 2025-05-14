@@ -2,18 +2,21 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FaDiscord } from 'react-icons/fa';
+import { FaDiscord, FaGoogle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function LoginForm() {
-  const { signInWithDiscord } = useAuth();
+  const { signInWithDiscord, signInWithGoogle } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<{discord: boolean, google: boolean}>({
+    discord: false,
+    google: false
+  });
 
-  const handleSignIn = async () => {
+  const handleDiscordSignIn = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(prev => ({ ...prev, discord: true }));
       await signInWithDiscord();
     } catch (error) {
       toast({
@@ -23,7 +26,23 @@ export default function LoginForm() {
       });
       console.error("Discord auth error:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(prev => ({ ...prev, discord: false }));
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(prev => ({ ...prev, google: true }));
+      await signInWithGoogle();
+    } catch (error) {
+      toast({
+        title: "Authentication Error",
+        description: "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Google auth error:", error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, google: false }));
     }
   };
 
@@ -38,12 +57,21 @@ export default function LoginForm() {
         </p>
         
         <Button 
-          onClick={handleSignIn}
-          disabled={isLoading}
+          onClick={handleDiscordSignIn}
+          disabled={isLoading.discord}
           className="bg-[#5865F2] hover:bg-[#4752C4] text-white flex items-center justify-center gap-2 w-full"
         >
           <FaDiscord className="h-5 w-5" />
-          {isLoading ? "Connecting..." : "Sign in with Discord"}
+          {isLoading.discord ? "Connecting..." : "Sign in with Discord"}
+        </Button>
+
+        <Button 
+          onClick={handleGoogleSignIn}
+          disabled={isLoading.google}
+          className="bg-[#4285F4] hover:bg-[#3367D6] text-white flex items-center justify-center gap-2 w-full"
+        >
+          <FaGoogle className="h-5 w-5" />
+          {isLoading.google ? "Connecting..." : "Sign in with Google"}
         </Button>
       </CardContent>
     </Card>

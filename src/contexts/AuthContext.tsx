@@ -8,6 +8,7 @@ interface AuthContextProps {
   user: User | null;
   loading: boolean;
   signInWithDiscord: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -70,6 +71,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
   };
+  
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`,
+          skipBrowserRedirect: false // This ensures the browser will redirect to Google
+        }
+      });
+      
+      if (error) {
+        console.error('Google sign in error:', error.message);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      throw error;
+    }
+  };
 
   const signOut = async () => {
     try {
@@ -89,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     signInWithDiscord,
+    signInWithGoogle,
     signOut,
   };
 
