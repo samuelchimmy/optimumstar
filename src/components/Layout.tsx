@@ -1,8 +1,10 @@
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Copy, Check } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,6 +12,22 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const { user, signOut } = useAuth();
+  const [copied, setCopied] = useState(false);
+  
+  const walletAddress = "0xfa2B8eD012f756E22E780B772d604af4575d5fcf";
+  
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(walletAddress);
+    setCopied(true);
+    toast({
+      title: "Copied!",
+      description: "Wallet address copied to clipboard",
+    });
+    
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -61,9 +79,25 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
       
-      <footer className="bg-dark text-light p-4 text-center">
-        <div className="container mx-auto">
-          <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
+      <footer className="bg-dark text-light p-4">
+        <div className="container mx-auto space-y-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>Built with ❤️ by <a href="https://x.com/MetisCharter" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-secondary transition-colors">jadeofwallstreet</a></p>
+            
+            <div className="flex flex-col items-center md:items-end">
+              <p className="text-sm mb-2">Donate to this project</p>
+              <div className="flex items-center space-x-2 bg-gray-800 rounded-md px-3 py-2 text-sm">
+                <span className="truncate max-w-[200px] sm:max-w-xs">{walletAddress}</span>
+                <button 
+                  onClick={copyToClipboard}
+                  className="text-primary hover:text-secondary transition-colors"
+                  aria-label="Copy wallet address"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
