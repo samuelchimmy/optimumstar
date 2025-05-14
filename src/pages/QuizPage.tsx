@@ -6,7 +6,8 @@ import Layout from '../components/Layout';
 import QuizLevel from '../components/QuizLevel';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserProfile, updateUserProgress } from '../lib/supabase';
-import { Star, Trophy, Award } from 'lucide-react';
+import { Star, Trophy, Award, AlertTriangle } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 export default function QuizPage() {
   const { user, loading } = useAuth();
@@ -16,6 +17,7 @@ export default function QuizPage() {
   const [totalScore, setTotalScore] = useState(0);
   const [levelScores, setLevelScores] = useState<number[]>([0, 0, 0, 0, 0]);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizAlreadyCompleted, setQuizAlreadyCompleted] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -31,7 +33,17 @@ export default function QuizPage() {
       
       const profile = await getUserProfile(user.id);
       if (profile) {
+        // Check if the quiz has been already completed
+        if (profile.quiz_completed) {
+          setQuizAlreadyCompleted(true);
+        }
+        
         setCurrentLevel(profile.level > 5 ? 5 : profile.level);
+        
+        // Set correct_answers as the total score if available
+        if (profile.correct_answers) {
+          setTotalScore(profile.correct_answers);
+        }
       } else {
         // Default to level 1 if profile not found
         setCurrentLevel(1);
@@ -65,6 +77,13 @@ export default function QuizPage() {
       // Update the final score in the database
       if (user) {
         updateUserProgress(user.id, nextLevel, newTotalScore);
+        
+        // Show a toast confirmation
+        toast({
+          title: "Quiz Completed!",
+          description: `Your final score of ${newTotalScore}/50 has been recorded.`,
+          duration: 5000,
+        });
       }
     } else {
       // Continue to next level
@@ -78,6 +97,42 @@ export default function QuizPage() {
       <Layout>
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="animate-pulse text-primary text-xl">Loading quiz...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // If quiz was already completed in a previous session, show completion message
+  if (quizAlreadyCompleted) {
+    return (
+      <Layout>
+        <div className="min-h-[60vh] py-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold mb-8 flex items-center justify-center gap-2">
+              <Trophy className="h-8 w-8 text-primary" /> Quiz Already Completed!
+            </h1>
+            
+            <div className="bg-secondary/20 rounded-lg p-8 mb-8">
+              <div className="flex items-center justify-center mb-6 text-amber-600">
+                <AlertTriangle className="h-12 w-12" />
+              </div>
+              <p className="text-xl mb-6">
+                You have already completed all levels of the quiz. Thank you for participating!
+              </p>
+              <p className="text-lg mb-8">
+                Please check back later for the next round of quizzes. 
+                In the meantime, you can view your ranking on the leaderboard.
+              </p>
+              
+              <Button
+                onClick={() => navigate('/leaderboard')}
+                className="bg-primary hover:bg-primary/90 text-light"
+                size="lg"
+              >
+                View Leaderboard
+              </Button>
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -120,20 +175,8 @@ export default function QuizPage() {
             
             <div className="flex justify-center gap-4">
               <Button
-                onClick={() => {
-                  setCurrentLevel(1);
-                  setIsStarted(false);
-                  setQuizCompleted(false);
-                  setTotalScore(0);
-                  setLevelScores([0, 0, 0, 0, 0]);
-                }}
-                className="bg-primary hover:bg-primary/90 text-light"
-              >
-                Take Quiz Again
-              </Button>
-              <Button
                 onClick={() => navigate('/leaderboard')}
-                variant="outline"
+                className="bg-primary hover:bg-primary/90 text-light"
               >
                 View Leaderboard
               </Button>

@@ -16,6 +16,7 @@ export interface UserProfile {
   created_at: string | null;
   discord_username?: string | null;
   twitter_username?: string | null;
+  quiz_completed?: boolean | null;
 }
 
 export interface QuizQuestion {
@@ -101,6 +102,7 @@ async function createProfileAndFetch(userId: string, retriesLeft: number): Promi
       level: 1,
       correct_answers: 0,
       created_at: new Date().toISOString(),
+      quiz_completed: false,
     };
     
     console.log('Creating default profile:', defaultProfile);
@@ -183,7 +185,8 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
         avatar_url: profile.avatar_url || '',
         level: profile.level || 1,
         correct_answers: profile.correct_answers || 0,
-        created_at: profile.created_at || new Date().toISOString()
+        created_at: profile.created_at || new Date().toISOString(),
+        quiz_completed: profile.quiz_completed || false,
       }], {
         onConflict: 'id',
         ignoreDuplicates: false
@@ -267,6 +270,7 @@ export async function updateUserProfile(
         created_at: new Date().toISOString(),
         discord_username: profileData.discord_username,
         twitter_username: profileData.twitter_username,
+        quiz_completed: profileData.quiz_completed || false,
       };
       
       return createUserProfile(defaultProfile);
@@ -293,7 +297,7 @@ export async function updateUserProfile(
   }
 }
 
-// Update user progress
+// Update user progress with accumulated scores
 export async function updateUserProgress(
   userId: string, 
   level: number, 
@@ -308,18 +312,42 @@ export async function updateUserProgress(
     // Get current profile to correctly update total score
     const { data: existingProfile } = await supabase
       .from('profiles')
-      .select('level, correct_answers')
+      .select('level, correct_answers, quiz_completed')
       .eq('id', userId)
       .maybeSingle();
     
-    // If total score at level 5 completion is provided, use that value directly
-    // Otherwise, update level normally
+    if (!existingProfile) {
+      console.error('Profile not found for user:', userId);
+      return false;
+    }
+    
+    // If quiz is already completed, don't update anything
+    if (existingProfile.quiz_completed) {
+      console.log('Quiz already completed for user:', userId);
+      return true;
+    }
+    
+    const updates: any = { level };
+    
+    // For final level completion (level > 5), set the total score and mark quiz as completed
+    if (level > 5) {
+      updates.correct_answers = correctAnswers;
+      updates.quiz_completed = true;
+      console.log('Quiz completed, setting final score:', correctAnswers);
+    } else {
+      // For individual level completions, we shouldn't overwrite the accumulated score
+      // Only update if we're moving to a higher level
+      if (existingProfile.level && level > existingProfile.level) {
+        // Add this level's score to the existing total
+        const currentTotal = existingProfile.correct_answers || 0;
+        updates.correct_answers = currentTotal + correctAnswers;
+        console.log(`Updated score for level ${level-1}: adding ${correctAnswers} to ${currentTotal}`);
+      }
+    }
+    
     const { error } = await supabase
       .from('profiles')
-      .update({ 
-        level, 
-        correct_answers: correctAnswers 
-      })
+      .update(updates)
       .eq('id', userId);
     
     if (error) {

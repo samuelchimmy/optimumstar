@@ -17,6 +17,7 @@ export type Database = {
           discord_username: string | null
           id: string
           level: number | null
+          quiz_completed: boolean | null
           twitter_username: string | null
           username: string | null
         }
@@ -27,6 +28,7 @@ export type Database = {
           discord_username?: string | null
           id: string
           level?: number | null
+          quiz_completed?: boolean | null
           twitter_username?: string | null
           username?: string | null
         }
@@ -37,6 +39,7 @@ export type Database = {
           discord_username?: string | null
           id?: string
           level?: number | null
+          quiz_completed?: boolean | null
           twitter_username?: string | null
           username?: string | null
         }
