@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Layout from '../components/Layout';
 import QuizLevel from '../components/QuizLevel';
 import { useAuth } from '../contexts/AuthContext';
-import { fetchUserProfile } from '../lib/supabase';
+import { getUserProfile } from '../lib/supabase';
 
 export default function QuizPage() {
   const { user, loading } = useAuth();
@@ -25,7 +24,7 @@ export default function QuizPage() {
     const loadUserLevel = async () => {
       if (!user) return;
       
-      const profile = await fetchUserProfile(user.id);
+      const profile = await getUserProfile(user.id);
       if (profile) {
         setCurrentLevel(profile.level > 5 ? 5 : profile.level);
       } else {

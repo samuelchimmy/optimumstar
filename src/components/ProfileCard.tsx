@@ -90,7 +90,7 @@ export default function ProfileCard() {
           </div>
           
           <div className="text-center text-sm text-gray-500 pt-2">
-            <p>Joined {new Date(profile.created_at).toLocaleDateString()}</p>
+            <p>Joined {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Recently'}</p>
           </div>
         </div>
       </CardContent>

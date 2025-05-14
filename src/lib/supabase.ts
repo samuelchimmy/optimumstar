@@ -10,6 +10,15 @@ export interface UserProfile {
   avatar_url: string;
   level: number;
   correct_answers: number;
+  created_at?: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correct_option: number;
+  level: number;
 }
 
 // Fetch a user profile by ID
@@ -33,6 +42,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   }
 }
 
+// Alias for getUserProfile to maintain compatibility
+export const fetchUserProfile = getUserProfile;
+
 // Create a new user profile
 export async function createUserProfile(profile: UserProfile): Promise<UserProfile | null> {
   try {
@@ -49,7 +61,7 @@ export async function createUserProfile(profile: UserProfile): Promise<UserProfi
     
     const { data, error } = await supabase
       .from('profiles')
-      .insert([profile])
+      .insert([profile as any])
       .select()
       .single();
     
@@ -74,7 +86,7 @@ export async function updateUserProgress(
   try {
     const { error } = await supabase
       .from('profiles')
-      .update({ level, correct_answers: correctAnswers })
+      .update({ level, correct_answers: correctAnswers } as any)
       .eq('id', userId);
     
     if (error) {
@@ -110,6 +122,9 @@ export async function getLeaderboard(): Promise<UserProfile[]> {
   }
 }
 
+// Alias for getLeaderboard to maintain compatibility
+export const fetchLeaderboard = getLeaderboard;
+
 // Get user ranking on leaderboard
 export async function getUserRanking(userId: string): Promise<number> {
   try {
@@ -123,10 +138,27 @@ export async function getUserRanking(userId: string): Promise<number> {
       return 0;
     }
     
-    const userIndex = data.findIndex(user => user.id === userId);
+    const userIndex = data.findIndex(user => (user as any).id === userId);
     return userIndex !== -1 ? userIndex + 1 : 0;
   } catch (error) {
     console.error('getUserRanking error:', error);
     return 0;
   }
+}
+
+// Mock function for fetching quiz questions since we're missing this implementation
+export async function fetchQuestions(level: number): Promise<QuizQuestion[]> {
+  console.log(`Fetching questions for level ${level}`);
+  // This would normally fetch questions from a database
+  // Mock implementation for now
+  return [
+    {
+      id: '1',
+      question: `Level ${level} Question - Sample question text?`,
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correct_option: 0,
+      level: level
+    },
+    // Additional mock questions would go here
+  ];
 }
