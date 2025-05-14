@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,10 @@ export default function QuizPage() {
   const [levelScores, setLevelScores] = useState<number[]>([0, 0, 0, 0, 0]);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizAlreadyCompleted, setQuizAlreadyCompleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   
+  // Effect to redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       // Not logged in, redirect to login
@@ -26,43 +29,66 @@ export default function QuizPage() {
     }
   }, [user, loading, navigate]);
   
+  // Effect to load user profile and quiz progress
   useEffect(() => {
     const loadUserLevel = async () => {
       if (!user) return;
       
-      const profile = await getUserProfile(user.id);
-      if (profile) {
-        // Check if the quiz has been already completed
-        if (profile.quiz_completed) {
-          setQuizAlreadyCompleted(true);
-        }
+      try {
+        console.log('Loading user profile data...');
+        const profile = await getUserProfile(user.id);
         
-        setCurrentLevel(profile.current_level > 5 ? 5 : profile.current_level);
-        
-        // Set score as the total score if available
-        if (profile.score) {
-          setTotalScore(profile.score);
-        }
-        
-        // Recreate level scores from the database if possible
-        // Note: This is an approximation since we don't store individual level scores
-        if (profile.current_level && profile.current_level > 1) {
-          const newLevelScores = [...levelScores];
-          const averageScore = profile.score ? Math.floor(profile.score / (profile.current_level - 1)) : 0;
+        if (profile) {
+          console.log('User profile loaded:', {
+            id: profile.id,
+            current_level: profile.current_level,
+            score: profile.score,
+            quiz_completed: profile.quiz_completed
+          });
           
-          // Fill completed levels with the average score as an approximation
-          for (let i = 0; i < profile.current_level - 1; i++) {
-            newLevelScores[i] = averageScore;
+          // Check if the quiz has been already completed
+          if (profile.quiz_completed) {
+            console.log('Quiz already completed for this user');
+            setQuizAlreadyCompleted(true);
           }
           
-          setLevelScores(newLevelScores);
-          console.log('Approximated level scores:', newLevelScores);
+          // Set current level (default to 1 if not set)
+          const savedLevel = profile.current_level || 1;
+          console.log(`Setting current level to: ${savedLevel}`);
+          setCurrentLevel(savedLevel > 5 ? 5 : savedLevel);
+          
+          // Set score as the total score if available
+          if (profile.score) {
+            console.log(`Setting total score to: ${profile.score}`);
+            setTotalScore(profile.score);
+          }
+          
+          // Recreate level scores from the database if possible
+          // Note: This is an approximation since we don't store individual level scores
+          if (profile.current_level && profile.current_level > 1) {
+            const newLevelScores = [...levelScores];
+            const averageScore = profile.score ? Math.floor(profile.score / (profile.current_level - 1)) : 0;
+            
+            // Fill completed levels with the average score as an approximation
+            for (let i = 0; i < profile.current_level - 1; i++) {
+              newLevelScores[i] = averageScore;
+            }
+            
+            setLevelScores(newLevelScores);
+            console.log('Approximated level scores:', newLevelScores);
+          }
+        } else {
+          // Default to level 1 if profile not found
+          console.log('No profile found, defaulting to level 1');
+          setCurrentLevel(1);
         }
-      } else {
-        // Default to level 1 if profile not found
-        setCurrentLevel(1);
+        
+      } catch (err) {
+        console.error('Error loading user profile:', err);
+        setError('Failed to load your quiz progress. Please try again later.');
+      } finally {
+        setLoadingProfile(false);
       }
-      setLoadingProfile(false);
     };
     
     if (user) {
@@ -71,15 +97,26 @@ export default function QuizPage() {
   }, [user]);
   
   const handleStartQuiz = () => {
+    console.log(`Starting quiz at level ${currentLevel}`);
     setIsStarted(true);
   };
   
-  const handleLevelComplete = (levelCompleted: number, score: number, isPerfectScore: boolean) => {
-    console.log(`Level ${currentLevel} completed with score: ${score}/10, Perfect score: ${isPerfectScore}`);
+  const handleLevelComplete = async (levelCompleted: number, score: number, isPerfectScore: boolean) => {
+    console.log(`Level ${levelCompleted} completed with score: ${score}/10, Perfect score: ${isPerfectScore}`);
+    
+    if (!user) {
+      console.error('No user logged in, cannot save progress');
+      toast({
+        title: "Error",
+        description: "Could not save your progress. Please log in again.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Store the score for this level
     const updatedScores = [...levelScores];
-    updatedScores[currentLevel! - 1] = score;
+    updatedScores[levelCompleted - 1] = score;
     setLevelScores(updatedScores);
     
     // Calculate total score so far (sum of all level scores)
@@ -90,33 +127,70 @@ export default function QuizPage() {
     
     // Allow advancing to next level regardless of score
     // Check if we've completed all levels
-    if (levelCompleted > 5) {
+    if (levelCompleted >= 5) {
+      console.log('All levels completed, showing final score');
       setQuizCompleted(true);
       
       // Update the final score in the database with completion timestamp
-      if (user) {
-        console.log('Quiz completed - sending final total score to database:', newTotalScore);
-        updateUserProgress(user.id, levelCompleted, newTotalScore, true);
-        
+      console.log('Quiz completed - sending final total score to database:', newTotalScore);
+      const success = await updateUserProgress(user.id, 6, newTotalScore, true);
+      
+      if (success) {
         // Show a toast confirmation
         toast({
           title: "Quiz Completed!",
           description: `Your final score of ${newTotalScore}/50 has been recorded.`,
           duration: 5000,
         });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to save your final score. Please try again.",
+          variant: "destructive"
+        });
       }
     } else {
       // Continue to next level regardless of score
-      setCurrentLevel(levelCompleted);
+      const nextLevel = levelCompleted + 1;
+      console.log(`Advancing to level ${nextLevel}`);
+      setCurrentLevel(nextLevel);
       setIsStarted(true);
       
-      // Also update the progressive score in the database
-      if (user) {
-        console.log(`Level ${currentLevel} completed - updating progressive score in database:`, newTotalScore);
-        updateUserProgress(user.id, levelCompleted, newTotalScore, false);
+      // IMPORTANT: Update the progress in the database immediately
+      // This ensures that if the user leaves and comes back, their progress is saved
+      console.log(`Level ${levelCompleted} completed - updating progressive score in database:`, newTotalScore);
+      const success = await updateUserProgress(user.id, nextLevel, newTotalScore, false);
+      
+      if (!success) {
+        toast({
+          title: "Warning",
+          description: "Could not save your progress. Your current level may not be remembered.",
+          variant: "destructive"
+        });
       }
     }
   };
+  
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center mb-8">
+            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-amber-600 mb-2">Error Loading Quiz</h2>
+            <p className="text-lg">{error}</p>
+          </div>
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => navigate('/')}
+          >
+            Back to Home
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
   
   if (loading || loadingProfile) {
     return (

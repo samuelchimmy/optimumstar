@@ -344,11 +344,20 @@ export async function updateUserProgress(
       return true;
     }
     
+    // IMPORTANT: Store the current level to prevent resetting progress on page refresh
+    // Always save the current level even when just completing a single level
     const updates: any = { 
-      current_level: level,
       score: correctAnswers,
-      last_completed_at: new Date().toISOString() 
+      last_completed_at: new Date().toISOString()
     };
+    
+    // Only update current_level if the new level is higher than the existing one
+    if (level > existingProfile.current_level) {
+      updates.current_level = level;
+      console.log(`Updating current level from ${existingProfile.current_level} to ${level}`);
+    } else {
+      console.log(`Keeping current level at ${existingProfile.current_level} (new level ${level} not higher)`);
+    }
     
     // For final level completion (level > 5), mark quiz as completed
     if (isCompleted || level > 5) {
@@ -436,7 +445,20 @@ export async function getUserRanking(userId: string): Promise<number> {
 
 // Fetch quiz questions from our local data
 export async function fetchQuestions(level: number): Promise<QuizQuestion[]> {
+  // Add debug logs to track the questions being fetched for each level
+  console.log(`Fetching questions for level: ${level}`);
+  
   // Filter questions for the requested level
   const levelQuestions = quizQuestions.filter(q => q.level === level);
+  
+  console.log(`Found ${levelQuestions.length} questions for level ${level}`);
+  
+  // Debug: Log the first question to verify data structure
+  if (levelQuestions.length > 0) {
+    console.log('Sample question:', levelQuestions[0].question);
+  } else {
+    console.warn(`WARNING: No questions found for level ${level}!`);
+  }
+  
   return levelQuestions;
 }

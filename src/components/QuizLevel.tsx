@@ -6,7 +6,7 @@ import QuizQuestion from './QuizQuestion';
 import { fetchQuestions, updateUserProgress, QuizQuestion as QuizQuestionType } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
-import { Trophy, Star } from 'lucide-react';
+import { Trophy, Star, AlertTriangle } from 'lucide-react';
 
 interface QuizLevelProps {
   level: number;
@@ -19,14 +19,39 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadQuestions = async () => {
-      const levelQuestions = await fetchQuestions(level);
-      setQuestions(levelQuestions);
-      setLoading(false);
+      console.log(`Loading questions for level ${level}...`);
+      try {
+        const levelQuestions = await fetchQuestions(level);
+        console.log(`Received ${levelQuestions.length} questions for level ${level}`);
+        
+        if (levelQuestions.length === 0) {
+          console.error(`No questions found for level ${level}!`);
+          setError(`No questions available for Level ${level}. Please try again later.`);
+        } else if (levelQuestions.length < 10) {
+          console.warn(`Not enough questions for level ${level}. Found: ${levelQuestions.length}`);
+          // Still set questions but with a warning
+          setQuestions(levelQuestions);
+          toast({
+            title: "Warning",
+            description: `Only ${levelQuestions.length} questions available for this level.`,
+            variant: "destructive"
+          });
+        } else {
+          setQuestions(levelQuestions);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading questions:', err);
+        setError('Failed to load questions. Please try again later.');
+        setLoading(false);
+      }
     };
     
     loadQuestions();
@@ -57,7 +82,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       
       // Calculate final score including the last answer
       const finalScore = isCorrect ? correctAnswers + 1 : correctAnswers;
-      console.log(`Level ${level} completed with final score: ${finalScore}/10`);
+      console.log(`Level ${level} completed with final score: ${finalScore}/${questions.length}`);
       
       // Play celebration music
       const audio = new Audio("/celebration.mp3");
@@ -65,14 +90,14 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       audio.play().catch(e => console.log("Audio play error:", e));
       
       // Check if user got a perfect score (10/10)
-      const isPerfectScore = finalScore === 10;
+      const isPerfectScore = finalScore === questions.length;
       
       // Pass the current level's score to the parent component
       onComplete(level, finalScore, isPerfectScore);
       
       toast({
         title: "Level Completed",
-        description: `You scored ${finalScore} out of 10 on this level!`,
+        description: `You scored ${finalScore} out of ${questions.length} on this level!`,
         variant: "default"
       });
     }
@@ -86,10 +111,28 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-center mb-8">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-amber-600 mb-2">Oops! Something went wrong</h2>
+          <p className="text-lg">{error}</p>
+        </div>
+        <Button 
+          className="bg-primary hover:bg-primary/90"
+          onClick={() => navigate('/quiz')}
+        >
+          Back to Quiz Menu
+        </Button>
+      </div>
+    );
+  }
+
   if (completed) {
     // Calculate final score correctly
     const finalLevelScore = correctAnswers;
-    const isPerfectScore = finalLevelScore === 10;
+    const isPerfectScore = finalLevelScore === questions.length;
     
     return (
       <div className="text-center">
@@ -98,7 +141,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             <Trophy className="h-6 w-6" /> Level {level} Completed! 🎉
           </span>
         </h2>
-        <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{finalLevelScore} / 10</span></p>
+        <p className="text-xl mb-3">Your Score: <span className="font-bold text-primary">{finalLevelScore} / {questions.length}</span></p>
         
         {level < 5 ? (
           <Button 
@@ -120,6 +163,25 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             </Button>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Don't try to render if no questions
+  if (questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-center mb-8">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-amber-600 mb-2">No Questions Available</h2>
+          <p className="text-lg">There are no questions available for this level.</p>
+        </div>
+        <Button 
+          className="bg-primary hover:bg-primary/90"
+          onClick={() => navigate('/quiz')}
+        >
+          Back to Quiz Menu
+        </Button>
       </div>
     );
   }
