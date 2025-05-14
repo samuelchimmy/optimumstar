@@ -32,7 +32,12 @@ interface ExtendedDatabase extends Database {
         Insert: Omit<UserProfile, 'created_at'>;
         Update: Partial<UserProfile>;
       };
+      // Preserve existing empty tables structure
     };
+    Views: Database['public']['Views'];
+    Functions: Database['public']['Functions'];
+    Enums: Database['public']['Enums'];
+    CompositeTypes: Database['public']['CompositeTypes'];
   };
 }
 
