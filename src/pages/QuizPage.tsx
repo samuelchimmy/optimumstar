@@ -125,7 +125,6 @@ const QuizPage = () => {
           <QuizLevel 
             level={currentLevel} 
             onComplete={handleLevelComplete}
-            navigate={navigate}
           />
         ) : (
           <QuizMenu

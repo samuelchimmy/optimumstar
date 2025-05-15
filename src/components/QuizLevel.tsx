@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import QuizQuestion from './QuizQuestion';
-import { fetchQuestions, updateUserProgress, QuizQuestion as QuizQuestionType } from '../lib/supabase';
+import { fetchQuestions } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { Trophy, Star, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizLevelProps {
   level: number;
@@ -14,7 +14,7 @@ interface QuizLevelProps {
 }
 
 export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
-  const [questions, setQuestions] = useState<QuizQuestionType[]>([]);
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [loading, setLoading] = useState(true);

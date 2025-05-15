@@ -5,9 +5,9 @@ import { toast } from '@/hooks/use-toast';
 export const fetchUserProgress = async (userId: string) => {
   try {
     const { data, error } = await supabase
-      .from('user_progress')
-      .select('current_level, total_score')
-      .eq('user_id', userId)
+      .from('profiles')
+      .select('current_level, score')
+      .eq('id', userId)
       .single();
     
     if (error) {
@@ -17,7 +17,7 @@ export const fetchUserProgress = async (userId: string) => {
     
     return {
       currentLevel: data?.current_level || 1,
-      totalScore: data?.total_score || 0
+      totalScore: data?.score || 0
     };
   } catch (error) {
     console.error('Error fetching user progress:', error);
@@ -33,13 +33,15 @@ export const updateUserProgress = async (
 ) => {
   try {
     const { error } = await supabase
-      .from('user_progress')
-      .upsert({
-        user_id: userId,
+      .from('profiles')
+      .update({
+        id: userId,
         current_level: newLevel,
-        total_score: newScore,
-        completed: isComplete
-      });
+        score: newScore,
+        quiz_completed: isComplete,
+        last_completed_at: new Date().toISOString()
+      })
+      .eq('id', userId);
     
     if (error) {
       console.error('Error updating user progress:', error);
