@@ -6,26 +6,36 @@ export const fetchUserProgress = async (userId: string) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('current_level, score, completed_levels')
+      .select('current_level, score, completed_levels, quiz_completed')
       .eq('id', userId)
       .single();
     
     if (error) {
       console.error('Error fetching user progress:', error);
-      return { currentLevel: 1, totalScore: 0, completedLevels: {} };
+      return { 
+        data: { currentLevel: 1, totalScore: 0, completedLevels: {}, quizCompleted: false },
+        error
+      };
     }
     
     // Parse the completed_levels JSON from the database, or use empty object if null
     const completedLevels = data?.completed_levels ? data.completed_levels : {};
     
-    return {
-      currentLevel: data?.current_level || 1,
-      totalScore: data?.score || 0,
-      completedLevels
+    return { 
+      data: {
+        currentLevel: data?.current_level || 1,
+        totalScore: data?.score || 0,
+        completedLevels,
+        quizCompleted: data?.quiz_completed || false
+      },
+      error: null
     };
   } catch (error) {
     console.error('Error fetching user progress:', error);
-    return { currentLevel: 1, totalScore: 0, completedLevels: {} };
+    return { 
+      data: { currentLevel: 1, totalScore: 0, completedLevels: {}, quizCompleted: false },
+      error 
+    };
   }
 };
 

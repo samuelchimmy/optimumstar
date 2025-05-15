@@ -1,18 +1,58 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
 import LeaderboardTable from '../components/LeaderboardTable';
+import { toast } from '@/hooks/use-toast';
+import { fetchUserProgress } from '../services/quizProgressService';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
+  
+  // Check if the user has completed all quiz levels when the component mounts
+  useEffect(() => {
+    const checkUserProgress = async () => {
+      if (!user) return;
+      
+      try {
+        setUserLoading(true);
+        const { data } = await supabase
+          .from('profiles')
+          .select('quiz_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (data && data.quiz_completed) {
+          setQuizCompleted(true);
+        }
+      } catch (error) {
+        console.error('Error checking quiz completion status:', error);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    
+    if (user) {
+      checkUserProgress();
+    }
+  }, [user]);
   
   const handleStartQuiz = () => {
     if (!user) {
       navigate('/login');
+    } else if (quizCompleted) {
+      toast({
+        title: "Quiz Already Completed",
+        description: "You've already completed all levels of the quiz. Please wait for the next round!",
+        variant: "default",
+        duration: 5000,
+      });
     } else {
       navigate('/quiz');
     }
@@ -35,7 +75,15 @@ export default function HomePage() {
           size="lg"
           className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 animate-fade-in"
         >
-          {!loading && user ? "Start Quiz" : "Sign In to Start"}
+          {loading || userLoading ? (
+            "Loading..."
+          ) : !user ? (
+            "Sign In to Start"
+          ) : quizCompleted ? (
+            "Quiz Completed - Wait for Next Round"
+          ) : (
+            "Start Quiz"
+          )}
         </Button>
         
         <div className="mt-16 w-full max-w-4xl">

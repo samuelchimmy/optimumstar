@@ -23,6 +23,7 @@ const QuizPage = () => {
   const [totalScore, setTotalScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [completedLevels, setCompletedLevels] = useState<Record<number, number>>({});
+  const [quizCompleted, setQuizCompleted] = useState(false);
   
   // Maximum level available in the quiz
   const MAX_LEVEL = 5;
@@ -40,11 +41,24 @@ const QuizPage = () => {
     const loadProgress = async () => {
       try {
         setLoading(true);
-        const { currentLevel, totalScore, completedLevels } = await fetchUserProgress(user.id);
+        const { data } = await fetchUserProgress(user.id);
         
-        setCurrentLevel(currentLevel);
-        setTotalScore(totalScore);
-        setCompletedLevels(completedLevels || {});
+        setCurrentLevel(data.currentLevel);
+        setTotalScore(data.totalScore);
+        setCompletedLevels(data.completedLevels || {});
+        
+        // Check if the quiz is completed
+        if (data.quizCompleted) {
+          setQuizCompleted(true);
+          toast({
+            title: "Quiz Already Completed",
+            description: "You've already completed all levels of the quiz. Please wait for the next round!",
+            variant: "default",
+            duration: 5000,
+          });
+          // Redirect to home after a short delay
+          setTimeout(() => navigate('/'), 2000);
+        }
       } catch (error) {
         console.error('Error loading quiz progress:', error);
         toast({
@@ -93,19 +107,27 @@ const QuizPage = () => {
       const nextLevel = Math.min(levelCompleted + 1, MAX_LEVEL);
       
       // Check if the entire quiz is completed
-      if (levelCompleted === MAX_LEVEL) {
+      const isQuizCompleted = levelCompleted === MAX_LEVEL;
+      
+      if (isQuizCompleted) {
         // Update the database to mark quiz as completed
         const success = await updateUserProgress(user.id, nextLevel, newTotalScore, true, updatedCompletedLevels);
         
         if (success) {
+          setQuizCompleted(true);
           toast({
             title: "Congratulations!",
-            description: "You've completed all levels of the quiz!",
+            description: "You've completed all levels of the quiz! You'll be redirected to the home page.",
             duration: 5000,
           });
           
           // Update local state
           setCompletedLevels(updatedCompletedLevels);
+          
+          // Redirect to home page after a short delay
+          setTimeout(() => {
+            navigate('/');
+          }, 3000);
         } else {
           toast({
             title: "Warning",
@@ -165,6 +187,14 @@ const QuizPage = () => {
         {loading ? (
           <div className="flex justify-center items-center min-h-[60vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : quizCompleted ? (
+          <div className="flex flex-col items-center justify-center text-center py-12 min-h-[60vh]">
+            <h2 className="text-3xl font-bold mb-4 text-primary">Quiz Completed!</h2>
+            <p className="text-xl mb-8">You've already completed all levels of the quiz. Please wait for the next round!</p>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Return to Home
+            </Button>
           </div>
         ) : isStarted ? (
           <QuizLevel 
