@@ -21,6 +21,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(loading);
   const [error, setError] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Add a refresh key for state-based refreshes
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -82,7 +83,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
     if (!loading && user) {
       loadUserProfile();
     }
-  }, [user, loading]);
+  }, [user, loading, refreshKey]); // Add refreshKey to dependencies
 
   if (loading || profileLoading) {
     return (
@@ -114,6 +115,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
               onClick={() => {
                 setProfileLoading(true);
                 setError(false);
+                setRefreshKey(prev => prev + 1); // Increment refresh key to trigger reload
               }}
               className="mr-2"
             >
@@ -122,10 +124,10 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
             <Button 
               variant="outline" 
               onClick={() => {
-                setTimeout(() => window.location.reload(), 100);
+                setRefreshKey(prev => prev + 1); // Increment refresh key instead of reloading page
               }}
             >
-              Refresh Page
+              Refresh Profile
             </Button>
           </div>
         </CardContent>
