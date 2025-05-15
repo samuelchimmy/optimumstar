@@ -43,7 +43,6 @@ export const updateUserProgress = async (
     const { error } = await supabase
       .from('profiles')
       .update({
-        id: userId,
         current_level: newLevel,
         score: cappedScore,
         quiz_completed: isComplete,
