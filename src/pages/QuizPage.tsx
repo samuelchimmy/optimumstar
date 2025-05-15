@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Layout from '../components/Layout';
 import QuizLevel from '../components/QuizLevel';
@@ -152,23 +152,28 @@ export default function QuizPage() {
         });
       }
     } else {
-      // Continue to next level
-      console.log(`Advancing to level ${nextLevel}`);
-      setCurrentLevel(nextLevel);
-      setIsStarted(true);
-      
-      // IMPORTANT: Update the progress in the database immediately
-      // This ensures that if the user leaves and comes back, their progress is saved
-      console.log(`Level ${levelCompleted} completed - updating progressive score in database:`, newTotalScore);
+      // Update next level in the database without advancing automatically
+      console.log(`Level ${levelCompleted} completed - updating next level (${nextLevel}) and score in database`);
       const success = await updateUserProgress(user.id, nextLevel, newTotalScore, false);
       
-      if (!success) {
+      if (success) {
+        // Show a toast confirmation
+        toast({
+          title: "Progress Saved",
+          description: `Level ${levelCompleted} completed! You can now continue to Level ${nextLevel} from the menu.`,
+          duration: 5000,
+        });
+      } else {
         toast({
           title: "Warning",
           description: "Could not save your progress. Your current level may not be remembered.",
           variant: "destructive"
         });
       }
+      
+      // Don't automatically start the next level - user will need to start from menu
+      setIsStarted(false);
+      setCurrentLevel(nextLevel);
     }
   };
   

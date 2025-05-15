@@ -100,6 +100,15 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     }
   };
 
+  // Function to handle going back to quiz menu
+  const handleReturnToMenu = async (finalLevelScore: number, isPerfectScore: boolean) => {
+    // Call onComplete to update the database, but we'll navigate away instead of advancing
+    onComplete(level, finalLevelScore, isPerfectScore);
+    
+    // Navigate back to the quiz menu
+    navigate('/quiz');
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -143,12 +152,9 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
         {level < 5 ? (
           <Button 
             className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
-            onClick={() => {
-              // Important fix: Pass the CURRENT level as the completed level, not the next one
-              onComplete(level, finalLevelScore, isPerfectScore)
-            }}
+            onClick={() => handleReturnToMenu(finalLevelScore, isPerfectScore)}
           >
-            Continue to Level {level + 1}
+            Save Progress & Return to Menu
           </Button>
         ) : (
           <div className="space-y-4">
@@ -157,10 +163,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             </p>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
-              onClick={() => {
-                // Important fix: Pass the current level (5) as the completed level
-                onComplete(level, finalLevelScore, isPerfectScore)
-              }}
+              onClick={() => handleReturnToMenu(finalLevelScore, isPerfectScore)}
             >
               See Your Final Score
             </Button>
