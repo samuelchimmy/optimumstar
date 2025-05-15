@@ -6,22 +6,26 @@ export const fetchUserProgress = async (userId: string) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('current_level, score')
+      .select('current_level, score, completed_levels')
       .eq('id', userId)
       .single();
     
     if (error) {
       console.error('Error fetching user progress:', error);
-      return { currentLevel: 1, totalScore: 0 };
+      return { currentLevel: 1, totalScore: 0, completedLevels: {} };
     }
+    
+    // Parse the completed_levels JSON from the database, or use empty object if null
+    const completedLevels = data?.completed_levels ? data.completed_levels : {};
     
     return {
       currentLevel: data?.current_level || 1,
-      totalScore: data?.score || 0
+      totalScore: data?.score || 0,
+      completedLevels
     };
   } catch (error) {
     console.error('Error fetching user progress:', error);
-    return { currentLevel: 1, totalScore: 0 };
+    return { currentLevel: 1, totalScore: 0, completedLevels: {} };
   }
 };
 
@@ -29,16 +33,21 @@ export const updateUserProgress = async (
   userId: string, 
   newLevel: number, 
   newScore: number,
-  isComplete: boolean
+  isComplete: boolean,
+  completedLevels: Record<number, number> = {}
 ) => {
   try {
+    // Ensure total score doesn't exceed 50 (max possible score)
+    const cappedScore = Math.min(newScore, 50);
+    
     const { error } = await supabase
       .from('profiles')
       .update({
         id: userId,
         current_level: newLevel,
-        score: newScore,
+        score: cappedScore,
         quiz_completed: isComplete,
+        completed_levels: completedLevels,
         last_completed_at: new Date().toISOString()
       })
       .eq('id', userId);
@@ -75,4 +84,11 @@ export const calculateLevelScore = (
   const totalTimeBonus = timeBonus;
   
   return baseScore + perfectScoreBonus + totalTimeBonus;
+};
+
+// Calculate a standardized score that maps to a 0-10 range per level
+export const calculateStandardizedScore = (score: number) => {
+  // Assuming the maximum score per level is 1500 (10 questions × 100 points + 500 perfect bonus)
+  // Map it to a 0-10 scale
+  return Math.min(Math.round(score / 150), 10);
 };

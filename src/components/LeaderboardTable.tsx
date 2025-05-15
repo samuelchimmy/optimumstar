@@ -39,7 +39,13 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
           completed: user.quiz_completed
         })));
         
-        setLeaderboardData(data);
+        // Ensure all scores are capped at 50
+        const normalizedData = data.map(user => ({
+          ...user,
+          score: Math.min(user.score || 0, 50)
+        }));
+        
+        setLeaderboardData(normalizedData);
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
         toast({
@@ -54,6 +60,7 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
     getLeaderboardData();
   }, []);
   
+  // Function to handle clicking on a user row
   const handleRowClick = (userId: string) => {
     if (currentUserId) { // Only navigate if user is logged in
       navigate(`/user/${userId}`);
@@ -84,7 +91,7 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
   return (
     <div className="overflow-x-auto">
       <Table>
-        <TableCaption>Leaderboard shows accumulated scores from all completed levels</TableCaption>
+        <TableCaption>Leaderboard shows accumulated scores from all completed levels (max 50 points)</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Rank</TableHead>
@@ -97,8 +104,8 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
         <TableBody>
           {leaderboardData.map((user, index) => {
             const isCurrentUser = user.id === currentUserId;
-            // Ensure we're using the correct score field
-            const score = user.score || 0;
+            // Ensure the score is capped at 50
+            const score = Math.min(user.score || 0, 50);
             const isCompleted = user.quiz_completed;
             
             return (
