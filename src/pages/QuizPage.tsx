@@ -125,7 +125,9 @@ export default function QuizPage() {
     console.log(`New total score: ${newTotalScore}/50 (sum of all levels)`);
     setTotalScore(newTotalScore);
     
-    // Allow advancing to next level regardless of score
+    // Calculate the next level
+    const nextLevel = levelCompleted + 1;
+    
     // Check if we've completed all levels
     if (levelCompleted >= 5) {
       console.log('All levels completed, showing final score');
@@ -150,8 +152,7 @@ export default function QuizPage() {
         });
       }
     } else {
-      // Continue to next level regardless of score
-      const nextLevel = levelCompleted + 1;
+      // Continue to next level
       console.log(`Advancing to level ${nextLevel}`);
       setCurrentLevel(nextLevel);
       setIsStarted(true);

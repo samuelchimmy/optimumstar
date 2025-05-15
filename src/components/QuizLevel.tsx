@@ -92,9 +92,6 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       // Check if user got a perfect score (10/10)
       const isPerfectScore = finalScore === questions.length;
       
-      // Pass the current level's score to the parent component
-      onComplete(level, finalScore, isPerfectScore);
-      
       toast({
         title: "Level Completed",
         description: `You scored ${finalScore} out of ${questions.length} on this level!`,
@@ -146,7 +143,10 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
         {level < 5 ? (
           <Button 
             className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 mt-4"
-            onClick={() => onComplete(level + 1, finalLevelScore, isPerfectScore)}
+            onClick={() => {
+              // Important fix: Pass the CURRENT level as the completed level, not the next one
+              onComplete(level, finalLevelScore, isPerfectScore)
+            }}
           >
             Continue to Level {level + 1}
           </Button>
@@ -157,7 +157,10 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
             </p>
             <Button 
               className="bg-secondary hover:bg-secondary/90 text-dark text-lg px-8 py-6"
-              onClick={() => onComplete(level + 1, finalLevelScore, isPerfectScore)}
+              onClick={() => {
+                // Important fix: Pass the current level (5) as the completed level
+                onComplete(level, finalLevelScore, isPerfectScore)
+              }}
             >
               See Your Final Score
             </Button>
