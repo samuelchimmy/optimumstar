@@ -22,10 +22,10 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <AuthProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <BrowserRouter>
               <Toaster />
               <Sonner />
               <Routes>
@@ -38,10 +38,10 @@ function App() {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
