@@ -6,6 +6,7 @@ import QuizLevel from '../components/QuizLevel';
 import QuizMenu from '../components/QuizMenu';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { 
   fetchUserProgress, 
   updateUserProgress,
