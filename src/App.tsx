@@ -15,7 +15,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
-import { configureChains, createClient, WagmiConfig } from "wagmi";
+import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { mainnet, optimism } from '@wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { CivicAuthProvider as CivicProviderOriginal, UserButton } from '@civic/auth-web3/react';
@@ -29,18 +29,18 @@ document.title = "OptimumStar - Web3 Memory Quiz";
 const CIVIC_CLIENT_ID = "51ad0041-3de6-4bd8-942b-faf90562ee64";
 
 // Configure chains & providers
-const { chains, provider } = configureChains(
+const { chains, publicClient } = configureChains(
   [mainnet, optimism], // Optimum is on Optimism chain
   [publicProvider()]
 );
 
 // Create wagmi client
-const wagmiClient = createClient({
+const wagmiConfig = createConfig({
   autoConnect: true,
   connectors: [
     embeddedWallet()
   ],
-  provider,
+  publicClient,
 });
 
 function App() {
@@ -50,7 +50,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <WagmiConfig client={wagmiClient}>
+        <WagmiConfig config={wagmiConfig}>
           <CivicProviderOriginal clientId={CIVIC_CLIENT_ID} initialChain={optimism}>
             <AuthProvider>
               <CivicAuthProvider>

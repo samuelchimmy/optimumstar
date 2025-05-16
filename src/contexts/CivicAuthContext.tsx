@@ -42,8 +42,8 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
   
   // Use Wagmi's useBalance hook
   const { data: balanceData } = useBalance({
-    address: address || walletAddress as `0x${string}` | undefined,
-    enabled: isConnected && !!walletAddress,
+    address: address as `0x${string}` | undefined,
+    enabled: isConnected && !!address,
   });
   
   // Extract balance values
@@ -61,8 +61,8 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
       setIsWalletCreating(true);
       
       // Check if createWallet is available on the context
-      if ('createWallet' in civicUserContext) {
-        await (civicUserContext as any).createWallet();
+      if (civicUserContext.createWallet) {
+        await civicUserContext.createWallet();
         
         toast({
           title: "Wallet Created",
