@@ -180,6 +180,7 @@ export const updateUserProgress = async (
       // Handle case where existing completed_levels might be null
       const existingCompletedLevels = existingProfile.completed_levels || {};
       
+      // Fix the spread typing issue by ensuring existingCompletedLevels is an object
       updatedCompletedLevels = { ...existingCompletedLevels, ...completedLevels };
     }
     

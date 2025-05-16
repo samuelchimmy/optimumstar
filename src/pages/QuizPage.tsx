@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -92,7 +91,7 @@ const QuizPage = () => {
       toast({
         title: "Level Already Completed",
         description: "You've already completed this level and cannot revisit it.",
-        variant: "warning",
+        variant: "default",
       });
       return;
     }
