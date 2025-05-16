@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -181,7 +182,13 @@ export const updateUserProgress = async (
       const existingCompletedLevels = existingProfile.completed_levels || {};
       
       // Fix the spread typing issue by ensuring existingCompletedLevels is an object
-      updatedCompletedLevels = { ...existingCompletedLevels, ...completedLevels };
+      // Use a temporary variable with explicit Record type
+      const safeExistingLevels: Record<string, any> = 
+        typeof existingCompletedLevels === 'object' && existingCompletedLevels !== null 
+          ? existingCompletedLevels as Record<string, any>
+          : {};
+      
+      updatedCompletedLevels = { ...safeExistingLevels, ...completedLevels };
     }
     
     const { error: updateError } = await supabase
