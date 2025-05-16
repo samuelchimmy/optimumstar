@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -12,13 +11,14 @@ export interface UserProfile {
   id: string;
   username: string | null;
   avatar_url: string | null;
-  current_level: number | null;  // Updated from level to current_level
-  score: number | null;          // Updated from correct_answers to score
+  current_level: number | null;  
+  score: number | null;          
   created_at: string | null;
   discord_username?: string | null;
   twitter_username?: string | null;
   quiz_completed?: boolean | null;
   last_completed_at?: string | null;
+  completed_levels?: any | null; // Added this field which was missing in our migration
 }
 
 export interface QuizQuestion {
