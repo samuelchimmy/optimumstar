@@ -20,7 +20,7 @@ export default function Confetti({ active }: ConfettiProps) {
     }
     
     // Create confetti pieces
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 150; i++) {
       const confetti = document.createElement('div');
       confetti.classList.add('confetti-piece');
       
@@ -39,9 +39,20 @@ export default function Confetti({ active }: ConfettiProps) {
       // Random color
       confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
       
-      // Random size
-      confetti.style.width = `${Math.random() * 10 + 5}px`;
-      confetti.style.height = `${Math.random() * 15 + 5}px`;
+      // Random size and shape
+      const size = Math.random() * 10 + 5;
+      confetti.style.width = `${size}px`;
+      
+      // Mix of shapes: some are rectangles, some are circles
+      if (Math.random() > 0.5) {
+        confetti.style.height = `${size}px`;
+        confetti.style.borderRadius = '50%';
+      } else {
+        confetti.style.height = `${Math.random() * 15 + 5}px`;
+      }
+      
+      // Add some 3D rotation
+      confetti.style.transform += ` rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg)`;
       
       container.appendChild(confetti);
       
@@ -52,6 +63,37 @@ export default function Confetti({ active }: ConfettiProps) {
         }
       }, 8000);
     }
+    
+    // Add style to confetti pieces
+    const style = document.createElement('style');
+    style.textContent = `
+      .confetti-piece {
+        position: absolute;
+        top: -10px;
+        pointer-events: none;
+        z-index: 100;
+        animation: confetti-fall 3s ease-in-out forwards;
+      }
+      
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(0) rotate(0) scale(1);
+          opacity: 1;
+        }
+        80% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg) scale(0);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
     
   }, [active]);
   

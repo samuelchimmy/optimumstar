@@ -39,7 +39,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="font-bold text-xl flex items-center">
             <img 
-              src="/lovable-uploads/7e209781-0451-47b3-90c5-a162b8156433.png" 
+              src="/lovable-uploads/a5aeb46a-0e4e-4bf3-a94c-3d441c1ef3d1.png" 
               alt="Optimum Logo" 
               className="h-8 w-auto mr-2" 
             />
@@ -52,7 +52,7 @@ export default function Layout({ children }: LayoutProps) {
               Leaderboard
             </Link>
             <a 
-              href="https://docs.optimum.network" 
+              href="https://docs.getoptimum.xyz/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-secondary transition-colors"
