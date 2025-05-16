@@ -2,16 +2,22 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+/**
+ * Fetches the user's quiz progress from the database
+ * @param userId The ID of the user
+ */
 export const fetchUserProgress = async (userId: string) => {
   try {
+    console.log('[fetchUserProgress] Fetching progress for user:', userId);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('current_level, score, completed_levels, quiz_completed')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) {
-      console.error('Error fetching user progress:', error);
+      console.error('[fetchUserProgress] Error:', error);
       return { 
         data: { currentLevel: 1, totalScore: 0, completedLevels: {}, quizCompleted: false },
         error
@@ -21,7 +27,7 @@ export const fetchUserProgress = async (userId: string) => {
     // Parse the completed_levels JSON from the database, or use empty object if null
     const completedLevels = data?.completed_levels ? data.completed_levels : {};
     
-    return { 
+    const result = {
       data: {
         currentLevel: data?.current_level || 1,
         totalScore: data?.score || 0,
@@ -30,8 +36,11 @@ export const fetchUserProgress = async (userId: string) => {
       },
       error: null
     };
+    
+    console.log('[fetchUserProgress] Result:', result);
+    return result;
   } catch (error) {
-    console.error('Error fetching user progress:', error);
+    console.error('[fetchUserProgress] Unexpected error:', error);
     return { 
       data: { currentLevel: 1, totalScore: 0, completedLevels: {}, quizCompleted: false },
       error 
@@ -39,6 +48,14 @@ export const fetchUserProgress = async (userId: string) => {
   }
 };
 
+/**
+ * Updates the user's quiz progress in the database
+ * @param userId The ID of the user
+ * @param newLevel The new level to update to (only if higher than current)
+ * @param newScore The new total score
+ * @param isComplete Whether the quiz is completed
+ * @param completedLevels Record of completed levels and their scores
+ */
 export const updateUserProgress = async (
   userId: string, 
   newLevel: number, 
@@ -47,22 +64,99 @@ export const updateUserProgress = async (
   completedLevels: Record<number, number> = {}
 ) => {
   try {
+    console.log('[updateUserProgress] Updating user progress:');
+    console.log('- User ID:', userId);
+    console.log('- New Level:', newLevel);
+    console.log('- New Score:', newScore);
+    console.log('- Is Complete:', isComplete);
+    console.log('- Completed Levels:', completedLevels);
+    
+    // First, check if the user exists and get their current progress
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('current_level, score, quiz_completed, completed_levels')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (fetchError) {
+      console.error('[updateUserProgress] Error fetching profile:', fetchError);
+      toast({
+        title: 'Error',
+        description: 'Could not fetch your current progress.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+    
+    // If profile doesn't exist, create it with default values
+    if (!existingProfile) {
+      console.log('[updateUserProgress] Profile not found, creating new profile');
+      const { error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          username: 'User',
+          avatar_url: '',
+          current_level: newLevel,
+          score: newScore,
+          completed_levels: completedLevels,
+          quiz_completed: isComplete,
+          last_completed_at: new Date().toISOString()
+        });
+      
+      if (createError) {
+        console.error('[updateUserProgress] Error creating profile:', createError);
+        toast({
+          title: 'Error',
+          description: 'Could not create your profile.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+      return true;
+    }
+    
+    console.log('[updateUserProgress] Existing profile found:', existingProfile);
+    
+    // If quiz is already completed, don't update anything
+    if (existingProfile.quiz_completed) {
+      console.log('[updateUserProgress] Quiz already completed, no updates needed');
+      return true;
+    }
+    
     // Ensure total score doesn't exceed 50 (max possible score)
     const cappedScore = Math.min(newScore, 50);
     
-    const { error } = await supabase
+    // Only update level if new level is higher than current
+    const updatedLevel = Math.max(existingProfile.current_level || 1, newLevel);
+    
+    // Merge completed levels
+    const existingCompletedLevels = existingProfile.completed_levels || {};
+    const mergedCompletedLevels = { ...existingCompletedLevels };
+    
+    // Update merged completed levels with new data
+    Object.entries(completedLevels).forEach(([level, score]) => {
+      const levelNum = parseInt(level);
+      const existingScore = mergedCompletedLevels[levelNum] || 0;
+      // Only update if new score is better
+      if (score > existingScore) {
+        mergedCompletedLevels[levelNum] = score;
+      }
+    });
+    
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        current_level: newLevel,
+        current_level: updatedLevel,
         score: cappedScore,
         quiz_completed: isComplete,
-        completed_levels: completedLevels,
+        completed_levels: mergedCompletedLevels,
         last_completed_at: new Date().toISOString()
       })
       .eq('id', userId);
     
-    if (error) {
-      console.error('Error updating user progress:', error);
+    if (updateError) {
+      console.error('[updateUserProgress] Error updating profile:', updateError);
       toast({
         title: 'Error',
         description: 'Could not update your progress.',
@@ -71,13 +165,22 @@ export const updateUserProgress = async (
       return false;
     }
     
+    console.log('[updateUserProgress] Update successful');
     return true;
   } catch (error) {
-    console.error('Error updating user progress:', error);
+    console.error('[updateUserProgress] Unexpected error:', error);
+    toast({
+      title: 'Error',
+      description: 'An unexpected error occurred while saving your progress.',
+      variant: 'destructive'
+    });
     return false;
   }
 };
 
+/**
+ * Calculates the raw score for a level
+ */
 export const calculateLevelScore = (
   correctAnswers: number,
   totalQuestions: number,
@@ -95,9 +198,64 @@ export const calculateLevelScore = (
   return baseScore + perfectScoreBonus + totalTimeBonus;
 };
 
-// Calculate a standardized score that maps to a 0-10 range per level
+/**
+ * Calculate a standardized score that maps to a 0-10 range per level
+ */
 export const calculateStandardizedScore = (score: number) => {
   // Assuming the maximum score per level is 1500 (10 questions × 100 points + 500 perfect bonus)
   // Map it to a 0-10 scale
   return Math.min(Math.round(score / 150), 10);
+};
+
+/**
+ * Creates a new profile for a user if it doesn't exist
+ */
+export const ensureUserProfile = async (userId: string) => {
+  try {
+    console.log('[ensureUserProfile] Checking profile for user:', userId);
+    
+    // Check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (fetchError) {
+      console.error('[ensureUserProfile] Error checking profile:', fetchError);
+      return false;
+    }
+    
+    // If profile exists, no need to create a new one
+    if (existingProfile) {
+      console.log('[ensureUserProfile] Profile already exists');
+      return true;
+    }
+    
+    // Create new profile with default values
+    console.log('[ensureUserProfile] Creating new profile');
+    const { error: createError } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        username: 'User',
+        avatar_url: '',
+        current_level: 1,
+        score: 0,
+        completed_levels: {},
+        quiz_completed: false,
+        last_completed_at: new Date().toISOString()
+      });
+    
+    if (createError) {
+      console.error('[ensureUserProfile] Error creating profile:', createError);
+      return false;
+    }
+    
+    console.log('[ensureUserProfile] Profile created successfully');
+    return true;
+  } catch (error) {
+    console.error('[ensureUserProfile] Unexpected error:', error);
+    return false;
+  }
 };

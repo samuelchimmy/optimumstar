@@ -26,6 +26,10 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   useEffect(() => {
     const loadQuestions = async () => {
       console.log(`Loading questions for level ${level}...`);
+      setLoading(true);
+      setCurrentQuestionIndex(0); // Reset question index when level changes
+      setCorrectAnswers(0); // Reset correct answers when level changes
+      
       try {
         const levelQuestions = await fetchQuestions(level);
         console.log(`Received ${levelQuestions.length} questions for level ${level}`);
@@ -45,11 +49,10 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
         } else {
           setQuestions(levelQuestions);
         }
-        
-        setLoading(false);
       } catch (err) {
         console.error('Error loading questions:', err);
         setError('Failed to load questions. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
@@ -57,7 +60,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     loadQuestions();
   }, [level]);
 
-  const handleAnswerSubmit = async (isCorrect: boolean) => {
+  const handleAnswerSubmit = (isCorrect: boolean) => {
     // Log for debugging
     console.log(`Answer submitted for question ${currentQuestionIndex + 1}: ${isCorrect ? 'correct' : 'incorrect'}`);
     
@@ -89,7 +92,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       audio.volume = 0.5;
       audio.play().catch(e => console.log("Audio play error:", e));
       
-      // Check if user got a perfect score (10/10)
+      // Check if user got a perfect score (same as total questions)
       const isPerfectScore = finalScore === questions.length;
       
       toast({
@@ -101,12 +104,12 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   };
 
   // Function to handle going back to quiz menu
-  const handleReturnToMenu = async (finalLevelScore: number, isPerfectScore: boolean) => {
-    // Call onComplete to update the database, but we'll navigate away instead of advancing
-    onComplete(level, finalLevelScore, isPerfectScore);
+  const handleReturnToMenu = (finalLevelScore: number, isPerfectScore: boolean) => {
+    // Calculate raw score: 100 points per correct answer + 500 bonus for perfect score
+    const rawScore = finalLevelScore * 100 + (isPerfectScore ? 500 : 0);
     
-    // Navigate back to the quiz menu
-    navigate('/quiz');
+    // Call onComplete to update the database
+    onComplete(level, rawScore, isPerfectScore);
   };
 
   if (loading) {
@@ -136,7 +139,7 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   }
 
   if (completed) {
-    // Calculate final score correctly
+    // Calculate final level score correctly
     const finalLevelScore = correctAnswers;
     const isPerfectScore = finalLevelScore === questions.length;
     
@@ -218,4 +221,4 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       )}
     </div>
   );
-}
+};

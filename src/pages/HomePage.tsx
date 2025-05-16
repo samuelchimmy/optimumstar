@@ -7,7 +7,6 @@ import Layout from '../components/Layout';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { toast } from '@/hooks/use-toast';
 import { fetchUserProgress } from '../services/quizProgressService';
-import { supabase } from '@/integrations/supabase/client';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -22,15 +21,18 @@ export default function HomePage() {
       
       try {
         setUserLoading(true);
-        const { data } = await supabase
-          .from('profiles')
-          .select('quiz_completed')
-          .eq('id', user.id)
-          .maybeSingle();
+        const { data, error } = await fetchUserProgress(user.id);
         
-        if (data && data.quiz_completed) {
+        if (error) {
+          console.error('Error checking quiz completion status:', error);
+          return;
+        }
+        
+        if (data && data.quizCompleted) {
           setQuizCompleted(true);
         }
+        
+        console.log('User quiz completion status:', data.quizCompleted);
       } catch (error) {
         console.error('Error checking quiz completion status:', error);
       } finally {

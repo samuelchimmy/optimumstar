@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { 
   fetchUserProgress, 
   updateUserProgress,
+  ensureUserProfile,
   calculateLevelScore,
   calculateStandardizedScore
 } from '../services/quizProgressService';
@@ -38,11 +39,18 @@ const QuizPage = () => {
       return;
     }
     
-    // Load user progress from database
-    const loadProgress = async () => {
+    // Ensure user has a profile and then load progress
+    const initializeUserAndLoadProgress = async () => {
       try {
         setLoading(true);
+        
+        // First ensure the user profile exists
+        await ensureUserProfile(user.id);
+        
+        // Then load the progress
         const { data } = await fetchUserProgress(user.id);
+        
+        console.log('Loaded user progress:', data);
         
         setCurrentLevel(data.currentLevel);
         setTotalScore(data.totalScore);
@@ -61,7 +69,7 @@ const QuizPage = () => {
           setTimeout(() => navigate('/'), 2000);
         }
       } catch (error) {
-        console.error('Error loading quiz progress:', error);
+        console.error('Error initializing quiz progress:', error);
         toast({
           title: 'Error',
           description: 'Could not load your quiz progress.',
@@ -72,7 +80,7 @@ const QuizPage = () => {
       }
     };
     
-    loadProgress();
+    initializeUserAndLoadProgress();
   }, [user, navigate]);
 
   // Start a level from the menu
@@ -144,6 +152,7 @@ const QuizPage = () => {
         if (success) {
           // Update local state
           setCompletedLevels(updatedCompletedLevels);
+          setCurrentLevel(nextLevel);
           
           // Show a toast confirmation
           let toastMessage = `Level ${levelCompleted} completed with ${standardizedLevelScore}/10 points!`;
@@ -167,7 +176,6 @@ const QuizPage = () => {
         
         // Don't automatically start the next level - user will need to start from menu
         setIsStarted(false);
-        setCurrentLevel(nextLevel);
       }
     } else {
       // Score didn't improve
