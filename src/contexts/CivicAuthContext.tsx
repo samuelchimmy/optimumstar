@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser as useCivicUser } from '@civic/auth-web3/react';
 import { userHasWallet } from '@civic/auth-web3';
-import { useAccount } from '@wagmi/core';
+import { useAccount } from 'wagmi';
 import { useAuth as useSupabaseAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
