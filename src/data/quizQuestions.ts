@@ -8,614 +8,613 @@ export interface QuizQuestion {
 }
 
 export const quizQuestions: QuizQuestion[] = [
-  // Level 1: Succinct Network Basics
+  // Level 1: The Basics of Optimum
   {
     id: 1,
     level: 1,
-    question: "What problem does Succinct primarily solve?",
+    question: "What is Optimum primarily about?",
     options: [
-      "Crypto insomnia",
-      "Decentralized proof generation",
-      "NFT boredom",
-      "Blockchain diets"
+      "Launching meme tokens",
+      "Delivering memory infrastructure for blockchains",
+      "Becoming the next Ethereum",
+      "Selling Web3 stickers"
     ],
     correct_answer: 1
   },
   {
     id: 2,
     level: 1,
-    question: "Succinct uses what unique mechanism to assign proof requests?",
+    question: "Who co-founded Optimum?",
     options: [
-      "Random tweet selector",
-      "Proof contests",
-      "Rock-paper-blockchain",
-      "Vitalik's coin toss"
-    ],
-    correct_answer: 1
-  },
-  {
-    id: 3,
-    level: 1,
-    question: "How does Succinct discourage malicious provers?",
-    options: [
-      "Crypto jail",
-      "Collateral staking",
-      "Public shaming on Discord",
-      "Forced meme creation"
-    ],
-    correct_answer: 1
-  },
-  {
-    id: 4,
-    level: 1,
-    question: "SP1 in Succinct stands for what?",
-    options: [
-      "Sushi Party 1",
-      "Super Protocol 1",
-      "Succinct Proof 1",
-      "Succinct Party 1"
+      "Satoshi Nakamoto (on vacation)",
+      "Vitalik's cousin",
+      "Muriel Médard",
+      "Elon Musk"
     ],
     correct_answer: 2
   },
   {
+    id: 3,
+    level: 1,
+    question: "What powers Optimum's infrastructure?",
+    options: [
+      "AI dreams",
+      "Quantum rainbows",
+      "Random Linear Network Coding (RLNC)",
+      "Magic beans"
+    ],
+    correct_answer: 2
+  },
+  {
+    id: 4,
+    level: 1,
+    question: "Optimum is most like which computer part?",
+    options: [
+      "A dusty keyboard",
+      "RAM and memory bus",
+      "A toaster",
+      "A calculator"
+    ],
+    correct_answer: 1
+  },
+  {
     id: 5,
     level: 1,
-    question: "Succinct provides proofs for what type of programs?",
+    question: "Optimum connects to:",
     options: [
-      "JavaScript web apps",
-      "Crypto meme generators",
-      "Deterministic Rust programs",
-      "Python scripts"
+      "Only Bitcoin",
+      "Whatever's trending",
+      "Any blockchain, permissionlessly",
+      "TikTok nodes"
     ],
     correct_answer: 2
   },
   {
     id: 6,
     level: 1,
-    question: "Proof uniqueness in Succinct is guaranteed by?",
+    question: "Optimum improves dApp performance by:",
     options: [
-      "NFT authenticity certificates",
-      "User pinky promises",
-      "Unique nonce & prover addresses",
-      "Special blockchain sauce"
+      "Cooking it faster",
+      "Reducing network strain",
+      "Praying to the node gods",
+      "Teleporting packets"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 7,
     level: 1,
-    question: "If provers miss a deadline, they lose what?",
+    question: "What is the main challenge Optimum solves?",
     options: [
-      "Twitter verification badge",
-      "Crypto dignity",
-      "NFT collection",
-      "Collateral stake"
+      "Validator insomnia",
+      "Lack of real-time memory in blockchains",
+      "Heavy wallets",
+      "Gas leak"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 8,
     level: 1,
-    question: "Succinct's contest mechanism combats which common blockchain issue?",
+    question: "How is Optimum built?",
     options: [
-      "Gas fee fatigue",
-      "Crypto procrastination",
-      "Nothing-at-stake problem",
-      "Too much coffee"
+      "Like LEGO",
+      "Modular and permissionless",
+      "By freelancers",
+      "With spaghetti code"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 9,
     level: 1,
-    question: "Which of these is NOT a proof type in Succinct?",
+    question: "Which networks can use Optimum?",
     options: [
-      "CORE",
-      "GROTH16",
-      "COMPRESSED",
-      "DOGE-PROOF"
+      "Only Layer 1",
+      "Any blockchain",
+      "Just Ethereum",
+      "Only Solana"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 10,
     level: 1,
-    question: "What entity coordinates users and provers in Succinct?",
+    question: "Who benefits from Optimum?",
     options: [
-      "Ethereum Foundation",
-      "A smart blockchain cat",
-      "An application-specific blockchain",
-      "Binance's CEO"
+      "Only whales",
+      "Validators, devs, users, L1s and L2s",
+      "Banks",
+      "Aliens"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   
-  // Level 2: Proof Contests & Bidding
+  // Level 2: Memory Like a Blockchain Elephant
   {
     id: 11,
     level: 2,
-    question: "Why do provers bid on proofs?",
+    question: "What does RLNC stand for?",
     options: [
-      "Auction addiction",
-      "To please Elon Musk",
-      "For blockchain fame",
-      "To fairly allocate proof generation"
+      "Really Loud Node Chatter",
+      "Random Linear Network Coding",
+      "Rotating Loop Node Controller",
+      "Recursive Long Node Chain"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 12,
     level: 2,
-    question: "What happens when you bid highest?",
+    question: "What's a shard in RLNC?",
     options: [
-      "Free Ethereum socks",
-      "Vitalik congratulates you",
-      "Assigned to generate proof with higher chance",
-      "Immediate NFT drop"
+      "A magical relic",
+      "A piece of a coded message",
+      "A broken smart contract",
+      "A sandwich"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 13,
     level: 2,
-    question: "Collateral in Succinct helps prevent what?",
+    question: "Why are RLNC shards useful?",
     options: [
-      "Blockchain boredom",
-      "Griefing attacks",
-      "Sleepy nodes",
-      "Meme spam"
+      "They look cool",
+      "They reduce redundant bandwidth",
+      "They sing in harmony",
+      "They make coffee"
     ],
     correct_answer: 1
   },
   {
     id: 14,
     level: 2,
-    question: "What parameter influences proof assignment probability in Succinct?",
+    question: "What happens if a node receives enough RLNC shards?",
     options: [
-      "Gas fees spent",
-      "Alpha (α) parameter",
-      "Coffee consumed",
-      "Meme quality"
+      "It celebrates",
+      "It can decode the message",
+      "It explodes",
+      "It restarts"
     ],
     correct_answer: 1
   },
   {
     id: 15,
     level: 2,
-    question: "The \"Execute()\" function primarily does what?",
+    question: "RLNC helps peers start forwarding:",
     options: [
-      "Executes bad provers",
-      "Orders pizza",
-      "Handles payments & collateral logic",
-      "Sends Vitalik memes"
+      "After a full message is received",
+      "Immediately with the first shard",
+      "When Mercury is in retrograde",
+      "After morning coffee"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 16,
     level: 2,
-    question: "Provers reserve future proof slots by?",
+    question: "Traditional gossip protocols waste:",
     options: [
-      "Sending love letters to the blockchain",
-      "Minting NFTs",
-      "Pre-bidding slots",
-      "Tweeting hashtags"
+      "Good vibes",
+      "Bandwidth",
+      "Memory",
+      "Snack time"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 17,
     level: 2,
-    question: "Proof copying prevention relies on what?",
+    question: "Gossipping in Web3 spreads:",
     options: [
-      "Proof NFTs",
-      "Unique nonce",
-      "Meme watermarking",
-      "Crypto copyright police"
+      "Celebrity news",
+      "Blocks and transactions",
+      "Meme potential",
+      "Airdrop rumors"
     ],
     correct_answer: 1
   },
   {
     id: 18,
     level: 2,
-    question: "SPAM proofs in Succinct earn?",
+    question: "Message propagation is important for:",
     options: [
-      "Crypto jail time",
-      "Free gas tokens",
-      "No economic reward",
-      "Discord emoji privileges"
+      "NFT minting speed",
+      "Validator block rewards",
+      "Memecoin launches",
+      "Smart toaster updates"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 19,
     level: 2,
-    question: "Which mechanism reduces network contention in Succinct?",
+    question: "How fast are RLNC-based messages?",
     options: [
-      "Mining rig smash tournament",
-      "NFT battles",
-      "Meme competitions",
-      "Proof contests assignment"
+      "Turtle speed",
+      "Real-time",
+      "Slow but steady",
+      "Only when bribed"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 20,
     level: 2,
-    question: "The advantage of auctions in Succinct is?",
+    question: "Where was RLNC developed?",
     options: [
-      "It looks fancy",
-      "Creates blockchain drama",
-      "Decentralizes proof selection",
-      "Entertains provers"
+      "Hogwarts",
+      "MIT",
+      "Facebook",
+      "Wakanda Tech Lab"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   
-  // Level 3: Advanced Proof Mechanisms
+  // Level 3: Flex Your Nodes
   {
     id: 21,
     level: 3,
-    question: "Sybil resistance in Succinct means?",
+    question: "What are Flexnodes?",
     options: [
-      "Multiple personalities discouraged",
-      "Crypto jail if you cheat",
-      "Splitting identity reduces profits",
-      "Vitalik's stare-down"
+      "Blockchain yoga instructors",
+      "Homogeneous nodes in the Optimum network",
+      "Shiny validators",
+      "Nodes with attitude"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 22,
     level: 3,
-    question: "What's a proving pool in Succinct?",
+    question: "What can you do with a Flexnode?",
     options: [
-      "Ethereum hot tub parties",
-      "Where provers swim after work",
-      "Coordinated proof generation group",
-      "Crypto liquidity reservoirs"
+      "Stream music",
+      "Perform read/write operations",
+      "Stake meme tokens",
+      "Play chess"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 23,
     level: 3,
-    question: "Succinct's bidding window prevents what?",
+    question: "Optimum DeRAM is best described as:",
     options: [
-      "Shopping addiction",
-      "NFT FOMO",
-      "Last-minute auction sniping",
-      "Blockchain tantrums"
+      "A RAM-destroying virus",
+      "Decentralized Random Access Memory",
+      "A memory cleaner",
+      "Digital brain fog"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 24,
     level: 3,
-    question: "What happens if no valid proofs are submitted before the deadline?",
+    question: "What is the goal of DeRAM?",
     options: [
-      "Emergency meme deployment",
-      "Contest is re-run with a higher reward",
-      "Blockchain has a meltdown",
-      "Vitalik personally intervenes"
+      "Confuse developers",
+      "Provide low-latency, high-throughput memory",
+      "Censor data",
+      "Create RAM NFTs"
     ],
     correct_answer: 1
   },
   {
     id: 25,
     level: 3,
-    question: "Prover's bids are proportional to?",
+    question: "Why is decentralization hard for memory?",
     options: [
-      "Their NFT collection value",
-      "Their Twitter followers",
-      "Their proving capability",
-      "Their meme creation skills"
-    ],
-    correct_answer: 2
-  },
-  {
-    id: 26,
-    level: 3,
-    question: "What's the main advantage of Succinct's crypto-economic design?",
-    options: [
-      "Free crypto for everyone",
-      "More NFT opportunities",
-      "Aligned incentives for all participants",
-      "Fancy blockchain terminology"
-    ],
-    correct_answer: 2
-  },
-  {
-    id: 27,
-    level: 3,
-    question: "Which parameter helps optimize the balance between throughput and latency?",
-    options: [
-      "Caffeine level",
-      "Bid value and Alpha (α)",
-      "Moon phase alignment",
-      "Blockchain hype cycle"
+      "Too many tabs open",
+      "Asynchronous communication and malicious nodes",
+      "All memory gets deleted",
+      "Memory doesn't like freedom"
     ],
     correct_answer: 1
   },
   {
+    id: 26,
+    level: 3,
+    question: "Flexnodes also act as:",
+    options: [
+      "Backup dancers",
+      "Communication sockets",
+      "NFT traders",
+      "AI trainers"
+    ],
+    correct_answer: 1
+  },
+  {
+    id: 27,
+    level: 3,
+    question: "DeRAM avoids which synchronization method?",
+    options: [
+      "Distributed synchronization primitives",
+      "Handshakes",
+      "WiFi passwords",
+      "Memory meditation"
+    ],
+    correct_answer: 0
+  },
+  {
     id: 28,
     level: 3,
-    question: "How does Succinct increase probability of proper proof submission?",
+    question: "The benefit of avoiding those primitives is:",
     options: [
-      "Motivational blockchain posters",
-      "Economic penalties for missed deadlines",
-      "Proof cheerleaders",
-      "Blockchain therapy sessions"
+      "More party time",
+      "Less complexity, more durability",
+      "Node gossip reduction",
+      "Cheaper minting fees"
     ],
     correct_answer: 1
   },
   {
     id: 29,
     level: 3,
-    question: "What protects proof contests from central manipulation?",
+    question: "Who interacts with Flexnodes?",
     options: [
-      "Anti-manipulation spells",
-      "Decentralized assignment protocol",
-      "Blockchain police",
-      "Vitalik's watchful eye"
+      "Only miners",
+      "External clients",
+      "Celebrities",
+      "Dogecoin holders"
     ],
     correct_answer: 1
   },
   {
     id: 30,
     level: 3,
-    question: "Succinct's assignment mechanism primarily optimizes for?",
+    question: "How do Flexnodes achieve high availability?",
     options: [
-      "Prover entertainment",
-      "Maximum meme production",
-      "Higher throughput and lower latency",
-      "Blockchain drama minimization"
+      "Weekly yoga",
+      "Non-blocking design",
+      "Blockchain prayers",
+      "Cloud computing rituals"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   
-  // Level 4: Succinct Network Architecture
+  // Level 4: For the Curious Techie
   {
     id: 31,
     level: 4,
-    question: "Succinct improves latency by?",
+    question: "OptimumP2P is mainly used for:",
     options: [
-      "Faster typing provers",
-      "Hiring blockchain sprinters",
-      "Crypto coffee breaks",
-      "Short bidding windows & quick assignments"
+      "Playing Web3 trivia",
+      "Fast message propagation (aka gossiping)",
+      "Building DAOs",
+      "Podcast streaming"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 32,
     level: 4,
-    question: "What's NOT a component of the Succinct network?",
+    question: "What protocol does OptimumP2P use?",
     options: [
-      "Provers",
-      "Application-specific blockchain",
-      "Users",
-      "Blockchain therapists"
+      "Gossip Girl Protocol",
+      "Publish-Subscribe",
+      "P2P2P",
+      "Spam-chain"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 33,
     level: 4,
-    question: "The blockchain in Succinct mainly coordinates what?",
+    question: "What's wrong with normal gossiping?",
     options: [
-      "Crypto parties",
-      "NFT drops",
-      "Proof generation & verification",
-      "Developer meetups"
+      "Too slow and redundant",
+      "Not juicy enough",
+      "Only works at night",
+      "Too centralized"
     ],
-    correct_answer: 2
+    correct_answer: 0
   },
   {
     id: 34,
     level: 4,
-    question: "How does Succinct handle failure in proof generation?",
+    question: "How is RLNC different in gossip?",
     options: [
-      "Blockchain timeout",
-      "Re-runs contests with increased incentives",
-      "Sends apology NFTs",
-      "Emergency meme protocol"
+      "It sings the message",
+      "Sends shards instead of full messages",
+      "Waits for full moon",
+      "Uses emojis"
     ],
     correct_answer: 1
   },
   {
     id: 35,
     level: 4,
-    question: "What's the main hardware requirement for Succinct provers?",
+    question: "What happens to repeated info in RLNC gossip?",
     options: [
-      "Liquid cooling for style points",
-      "RGB gaming lights",
-      "High-performance GPUs",
-      "Blockchain-compatible coffee machines"
+      "Crashes nodes",
+      "It's much smaller",
+      "Turns into spam",
+      "Gets flagged"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 36,
     level: 4,
-    question: "Succinct's proof verification is optimized for?",
+    question: "What's a major performance benefit of OptimumP2P?",
     options: [
-      "NFT compatibility",
-      "Cost and speed efficiency",
-      "Maximum blockchain drama",
-      "Meme generation"
+      "Colorful dashboards",
+      "Low latency and bandwidth usage",
+      "Push notifications",
+      "Faster memes"
     ],
     correct_answer: 1
   },
   {
     id: 37,
     level: 4,
-    question: "Which chain hosts the Succinct coordination layer?",
+    question: "Traditional gossip delays message because:",
     options: [
-      "A dedicated application-specific blockchain",
-      "The chain with the best memes",
-      "Whatever chain Vitalik tweets about",
-      "The fun chain"
+      "Nodes are lazy",
+      "Messages need full receipt before forwarding",
+      "Too much chit-chat",
+      "VPN issues"
     ],
-    correct_answer: 0
+    correct_answer: 1
   },
   {
     id: 38,
     level: 4,
-    question: "When would you use compressed vs. native proofs?",
+    question: "Fast gossiping benefits who the most?",
     options: [
-      "When the moon is full",
-      "When your NFTs need compression",
-      "Based on verification cost-benefit analysis",
-      "When you run out of blockchain space"
+      "Memecoin traders",
+      "Validators and MEV searchers",
+      "TikTok creators",
+      "Web2 devs"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 39,
     level: 4,
-    question: "What makes proof verification in Succinct efficient?",
+    question: "If gossip is too slow, validators might:",
     options: [
-      "Quantum blockchain technology",
-      "Blockchain magic",
-      "Prover energy drinks",
-      "Specialized ZK circuits & optimizations"
+      "Lose block rewards",
+      "Go to therapy",
+      "Rage quit",
+      "Upgrade to GenZ nodes"
     ],
-    correct_answer: 3
+    correct_answer: 0
   },
   {
     id: 40,
     level: 4,
-    question: "Which proof type offers the best cost-efficiency for most use cases?",
+    question: "With RLNC, a peer can forward data:",
     options: [
-      "Compressed proofs",
-      "The one with the coolest name",
-      "The expensive one",
-      "Whatever Vitalik uses"
+      "After recharging",
+      "After receiving the first shard",
+      "At night",
+      "With a lucky charm"
     ],
-    correct_answer: 0
+    correct_answer: 1
   },
   
-  // Level 5: Practical Applications of Succinct
+  // Level 5: Final Boss Mode
   {
     id: 41,
     level: 5,
-    question: "ZK Rollups use Succinct because?",
+    question: "Optimum is backed by:",
     options: [
-      "Ethereum told them to",
-      "Cheap & reliable proofs",
-      "Rollups like trendy names",
-      "They like memes"
+      "Hogwarts Investment Group",
+      "1kx, Spartan, Kraken Ventures & more",
+      "Blockbuster",
+      "Elon's Twitter Space"
     ],
     correct_answer: 1
   },
   {
     id: 42,
     level: 5,
-    question: "What's the benefit of Succinct for dApp developers?",
+    question: "Who benefits from Optimum's memory system?",
     options: [
-      "Better blockchain memes",
-      "Free NFT drops",
-      "Easier integration of ZK proofs",
-      "More crypto parties"
+      "Only miners",
+      "Everyone from validators to dApp users",
+      "Block explorers",
+      "Crypto influencers only"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 43,
     level: 5,
-    question: "Which is NOT a benefit of Succinct's modular approach?",
+    question: "Which component helps with reduced latency?",
     options: [
-      "Optimized cost structures",
-      "Free blockchain counseling",
-      "Specialized proving hardware",
-      "Improved scalability"
+      "Magic spells",
+      "RLNC-powered messaging",
+      "Token inflation",
+      "Time travel"
     ],
     correct_answer: 1
   },
   {
     id: 44,
     level: 5,
-    question: "How does Succinct help with blockchain scaling?",
+    question: "What is Optimum's design philosophy?",
     options: [
-      "Efficient verification of off-chain computations",
-      "NFT compression technology",
-      "Blockchain diet plans",
-      "Crypto yoga sessions"
+      "One-chain to rule them all",
+      "Modular, permissionless, scalable",
+      "No rules, just vibes",
+      "Fork everything"
     ],
-    correct_answer: 0
+    correct_answer: 1
   },
   {
     id: 45,
     level: 5,
-    question: "The 'economic alignment' in Succinct refers to?",
+    question: "RLNC helps reduce:",
     options: [
-      "NFT price stabilization",
-      "Blockchain astrology",
-      "Incentives that encourage honest proving",
-      "Everyone getting rich"
+      "Dancing validators",
+      "Bandwidth wastage",
+      "Web2 nostalgia",
+      "The moon's gravitational pull"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 46,
     level: 5,
-    question: "Which network role benefits most from Succinct's tokenomics?",
+    question: "What makes Optimum scalable?",
     options: [
-      "Blockchain influencers",
-      "NFT collectors",
-      "Meme creators",
-      "Efficient provers with good hardware"
+      "Infinite memes",
+      "Its memory infrastructure and RLNC",
+      "Endless forks",
+      "Daily node workouts"
     ],
-    correct_answer: 3
+    correct_answer: 1
   },
   {
     id: 47,
     level: 5,
-    question: "How does Succinct help blockchains maintain decentralization?",
+    question: "What can happen to nodes in a bad gossip setup?",
     options: [
-      "Blockchain therapy",
-      "Proof diversity quotas",
-      "Distributing proving work through contests",
-      "Mandatory decentralization workshops"
+      "They oversleep",
+      "Get overwhelmed by redundant data",
+      "Order pizza",
+      "Become influencers"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 48,
     level: 5,
-    question: "What problem does Succinct's batching mechanism solve?",
+    question: "DeRAM handles reads/writes that are:",
     options: [
-      "Proof loneliness",
-      "Cost-efficiency for small transactions",
-      "Too many individual proofs",
-      "Blockchain boredom"
+      "Spiritual",
+      "Atomic",
+      "Lazy",
+      "Asynchronous only"
     ],
     correct_answer: 1
   },
   {
     id: 49,
     level: 5,
-    question: "Which types of applications benefit most from Succinct?",
+    question: "RLNC's flexibility helps avoid:",
     options: [
-      "Dating apps",
-      "NFT art galleries",
-      "Computation-heavy blockchain applications",
-      "Blockchain meme generators"
+      "Boring meetings",
+      "Costly synchronization",
+      "Meme wars",
+      "Token drift"
     ],
-    correct_answer: 2
+    correct_answer: 1
   },
   {
     id: 50,
     level: 5,
-    question: "What's the ultimate goal of the Succinct network?",
+    question: "What's the most impressive thing about Optimum?",
     options: [
-      "Maximum blockchain drama",
-      "World domination through memes",
-      "The perfect NFT marketplace",
-      "Accessible & efficient ZK proof generation"
+      "Its name",
+      "It's provably optimal and scalable",
+      "It runs on coffee",
+      "It launched with no whitepaper"
     ],
-    correct_answer: 3
+    correct_answer: 1
   }
 ];
-

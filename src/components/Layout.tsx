@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import BubbleBackground from './BubbleBackground';
 
 interface LayoutProps {
   children: ReactNode;
@@ -32,15 +33,17 @@ export default function Layout({ children }: LayoutProps) {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-dark text-light dark:bg-gray-900 p-4 shadow-md">
+      <BubbleBackground />
+      
+      <header className="bg-dark text-light dark:bg-gray-900 p-4 shadow-md relative z-10">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="font-bold text-xl flex items-center">
             <img 
-              src="/lovable-uploads/72641f32-8efc-4575-8782-2eee89d33f64.png" 
-              alt="Succinct Logo" 
+              src="/lovable-uploads/7e209781-0451-47b3-90c5-a162b8156433.png" 
+              alt="Optimum Logo" 
               className="h-8 w-auto mr-2" 
             />
-            <span className="text-primary">Succinct</span>
+            <span className="text-primary">Optimum</span>
             <span className="text-secondary dark:text-secondary-dark">Star</span>
           </Link>
           
@@ -49,12 +52,12 @@ export default function Layout({ children }: LayoutProps) {
               Leaderboard
             </Link>
             <a 
-              href="https://docs.succinct.xyz/docs/network/whitepapers" 
+              href="https://docs.optimum.network" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-secondary transition-colors"
             >
-              Succinct Whitepaper
+              Optimum Whitepaper
             </a>
             
             <ThemeToggle />
@@ -67,14 +70,14 @@ export default function Layout({ children }: LayoutProps) {
                 <Button 
                   variant="outline" 
                   onClick={signOut}
-                  className="text-light border-light hover:bg-primary hover:text-light dark:border-light/70"
+                  className="text-light border-light hover:bg-primary hover:text-light dark:border-light/70 liquid-button"
                 >
                   Sign Out
                 </Button>
               </div>
             ) : (
               <Link to="/login">
-                <Button className="bg-primary text-light hover:bg-primary/90">
+                <Button className="bg-primary text-light hover:bg-primary/90 liquid-button">
                   Sign In
                 </Button>
               </Link>
@@ -83,11 +86,11 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
       
-      <main className="flex-grow container mx-auto px-4 py-6">
+      <main className="flex-grow container mx-auto px-4 py-6 relative z-10">
         {children}
       </main>
       
-      <footer className="bg-dark text-light dark:bg-gray-900 p-4">
+      <footer className="bg-dark text-light dark:bg-gray-900 p-4 relative z-10">
         <div className="container mx-auto space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>

@@ -26,17 +26,18 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#fe11c5',
-					foreground: '#f9f9f9',
-					dark: '#fe11c5',
+					DEFAULT: '#be8dff', // Accent Purple
+					foreground: '#f1f1f1', // Light background
+					dark: '#be8dff', // Accent Purple
 				},
 				secondary: {
-					DEFAULT: '#8bcbe8',
-					foreground: '#000000',
-					dark: '#6da7c3',
+					DEFAULT: '#7be48b', // Accent Green
+					foreground: '#151515', // Primary Text/Dark Background
+					dark: '#7be48b', // Accent Green
 				},
-				dark: '#000000',
-				light: '#f9f9f9',
+				dark: '#151515', // Primary Text/Dark Background
+				light: '#f1f1f1', // Light background
+				secondaryBg: '#212121', // Secondary Background
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
@@ -79,13 +80,34 @@ export default {
 				"fade-in": {
 					from: { opacity: "0", transform: "translateY(10px)" },
 					to: { opacity: "1", transform: "translateY(0)" }
+				},
+				"float": {
+					"0%, 100%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(-10px)" }
+				},
+				"ripple": {
+					"0%": { transform: "scale(0)", opacity: "1" },
+					"100%": { transform: "scale(4)", opacity: "0" }
+				},
+				"bubble": {
+					"0%": { transform: "scale(0)", opacity: "0" },
+					"50%": { transform: "scale(1.2)", opacity: "0.8" },
+					"100%": { transform: "scale(1)", opacity: "1" }
+				},
+				"confetti": {
+					"0%": { transform: "translateY(0) rotate(0)", opacity: "1" },
+					"100%": { transform: "translateY(100vh) rotate(720deg)", opacity: "0" }
 				}
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
 				"accordion-up": "accordion-up 0.2s ease-out",
 				"celebration": "celebration 0.7s ease-in-out infinite",
-				"fade-in": "fade-in 0.5s ease-out"
+				"fade-in": "fade-in 0.5s ease-out",
+				"float": "float 3s ease-in-out infinite",
+				"ripple": "ripple 1s ease-out",
+				"bubble": "bubble 0.6s ease-out",
+				"confetti": "confetti 5s ease-out forwards"
 			}
 		}
 	},

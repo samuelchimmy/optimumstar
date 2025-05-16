@@ -11,12 +11,24 @@ export default function TermsPage() {
           <section className="mb-6">
             <h2 className="text-xl font-semibold mb-3">Disclaimer</h2>
             <p className="mb-4">
-              SuccinctStar is a community contribution created by "jadeofwallstreet" and is <strong>NOT</strong> an official 
-              Succinct production. This application is created for educational and entertainment purposes only.
+              OptimumStar is a community contribution created by "jadeofwallstreet" and is <strong>NOT</strong> an official 
+              Optimum production. This application is created for educational and entertainment purposes only.
             </p>
             <p className="mb-4">
-              The use of the Succinct name and logo is for amusement and educational purposes only, not for commercial use. 
-              This project is not affiliated with, endorsed by, or connected to Succinct Labs or any of its subsidiaries or affiliates.
+              The use of the Optimum name and logo is for amusement and educational purposes only, not for commercial use. 
+              This project is not affiliated with, endorsed by, or connected to Optimum Network or any of its subsidiaries or affiliates.
+            </p>
+          </section>
+          
+          <section className="mb-6">
+            <h2 className="text-xl font-semibold mb-3">About Optimum</h2>
+            <p className="mb-4">
+              Optimum is a high-performance memory infrastructure for any blockchain, powered by RLNC technology to
+              improve speed, scalability, and throughput across decentralized applications.
+            </p>
+            <p className="mb-4">
+              This quiz app aims to help users learn about Optimum's technology and its benefits for the Web3 ecosystem in a fun
+              and engaging way.
             </p>
           </section>
           
@@ -37,7 +49,7 @@ export default function TermsPage() {
           <section className="mb-6">
             <h2 className="text-xl font-semibold mb-3">Intellectual Property</h2>
             <p className="mb-4">
-              All intellectual property rights related to Succinct belong to their respective owners. The use of the Succinct 
+              All intellectual property rights related to Optimum belong to their respective owners. The use of the Optimum 
               name and logo in this application is not intended to infringe upon any trademark, copyright, or other intellectual 
               property rights.
             </p>

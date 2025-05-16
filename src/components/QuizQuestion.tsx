@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QuizQuestion as QuizQuestionType } from '../lib/supabase';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { CircleCheck, CircleX, ArrowRight } from 'lucide-react';
 
 interface QuizQuestionProps {
@@ -16,6 +16,19 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [rippleEffect, setRippleEffect] = useState<{ x: number, y: number, active: boolean }>({ x: 0, y: 0, active: false });
+
+  const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setRippleEffect({ x, y, active: true });
+    
+    setTimeout(() => {
+      setRippleEffect(prev => ({ ...prev, active: false }));
+    }, 600);
+  };
 
   const handleOptionSelect = (index: number) => {
     if (!hasSubmitted) {
@@ -47,12 +60,12 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
 
       toast({
         title: "Nailed it! 🎉",
-        description: "Your blockchain brain is on fire!",
+        description: "Your blockchain memory is working great!",
         variant: "default"
       });
     } else {
       toast({
-        title: "Oops, blockchain brain-freeze! 🥶",
+        title: "Memory buffer overflow! 🥶",
         description: "Moving to next question...",
         variant: "destructive"
       });
@@ -83,7 +96,7 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
   }, [timeLeft, isCorrect, onAnswerSubmit]);
 
   return (
-    <Card className="w-full max-w-2xl bg-light animate-fade-in shadow-lg">
+    <Card className="w-full max-w-2xl bg-light animate-fade-in shadow-lg relative overflow-hidden">
       <CardContent className="pt-6">
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-2">{question.question}</h3>
@@ -104,9 +117,21 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
                   ? "selected"
                   : ""
               }`}
-              onClick={() => handleOptionSelect(index)}
+              onClick={(e) => {
+                handleRipple(e);
+                handleOptionSelect(index);
+              }}
             >
               <p>{option}</p>
+              {rippleEffect.active && (
+                <span 
+                  className="ripple-effect" 
+                  style={{ 
+                    left: rippleEffect.x + 'px', 
+                    top: rippleEffect.y + 'px' 
+                  }}
+                ></span>
+              )}
             </div>
           ))}
         </div>
@@ -115,8 +140,8 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
           {hasSubmitted ? (
             <div className="w-full text-center">
               {isCorrect ? (
-                <div className="text-green-600 font-medium">
-                  <p className="text-lg flex items-center justify-center gap-2">
+                <div className="text-secondary font-medium">
+                  <p className="text-lg flex items-center justify-center gap-2 animate-bubble">
                     <CircleCheck className="h-5 w-5" /> Correct! 🎉
                   </p>
                   {timeLeft !== null && (
@@ -135,7 +160,7 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
                       setTimeLeft(0);
                     }}
                     variant="outline"
-                    className="mt-2 flex gap-2 items-center"
+                    className="mt-2 flex gap-2 items-center liquid-button"
                   >
                     Next Question <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -150,7 +175,7 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
           ) : (
             <Button 
               onClick={checkAnswer}
-              className="bg-primary hover:bg-primary/90 text-light"
+              className="bg-primary hover:bg-primary/90 text-light liquid-button"
               disabled={selectedOption === null}
             >
               Submit Answer

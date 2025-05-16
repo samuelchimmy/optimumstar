@@ -35,9 +35,9 @@ const QuizMenu = ({
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold">Quiz Menu</h2>
-          <div className="flex items-center gap-2">
-            <Trophy className="text-yellow-500" />
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Quiz Menu</h2>
+          <div className="flex items-center gap-2 animate-float">
+            <Trophy className="text-primary" />
             <span className="text-xl font-semibold">
               {totalScore}/{maxLevel * 10} points
             </span>
@@ -45,7 +45,7 @@ const QuizMenu = ({
         </div>
         
         <p className="text-gray-600 dark:text-gray-300">
-          Test your knowledge about zero-knowledge proofs and Succinct technology.
+          Test your knowledge about Optimum and Web3 memory infrastructure with RLNC technology.
         </p>
       </div>
 
@@ -53,23 +53,39 @@ const QuizMenu = ({
         {availableLevels.map(level => {
           const isCompleted = (completedLevels[level] || 0) > 0;
           const levelScore = completedLevels[level] || 0;
+          const isPerfect = levelScore === 10;
           
           return (
             <Card 
               key={level} 
-              className={`p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 ${
-                isCompleted ? 'border-green-500 hover:border-green-600' : 'hover:border-primary'
-              }`}
+              className={`p-6 hover:shadow-lg transition-all cursor-pointer border-2 ${
+                isCompleted 
+                  ? isPerfect 
+                    ? 'border-secondary hover:border-secondary/80' 
+                    : 'border-primary hover:border-primary/80' 
+                  : 'hover:border-primary'
+              } relative overflow-hidden group`}
               onClick={() => onStartLevel(level)}
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center relative z-10">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold">Level {level}</h3>
-                  {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {isCompleted && isPerfect && (
+                    <CheckCircle className="h-5 w-5 text-secondary animate-pulse" />
+                  )}
+                  {isCompleted && !isPerfect && (
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  )}
                 </div>
-                <ArrowRight className={isCompleted ? "text-green-500" : "text-primary"} />
+                <ArrowRight className={
+                  isCompleted 
+                    ? isPerfect 
+                      ? "text-secondary group-hover:translate-x-1 transition-transform" 
+                      : "text-primary group-hover:translate-x-1 transition-transform" 
+                    : "text-primary group-hover:translate-x-1 transition-transform"
+                } />
               </div>
-              <div className="mt-2">
+              <div className="mt-2 relative z-10">
                 <p className="text-gray-600 dark:text-gray-300">
                   {isCompleted 
                     ? `Completed: ${levelScore}/10 points${levelScore === 10 ? ' (Perfect!)' : ''}` 
@@ -79,11 +95,28 @@ const QuizMenu = ({
                   }
                 </p>
               </div>
+              
+              {/* Background bubble effect that appears on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div 
+                    key={i}
+                    className={`absolute rounded-full ${isPerfect ? 'bg-secondary/10' : 'bg-primary/10'}`}
+                    style={{
+                      width: `${Math.random() * 60 + 20}px`,
+                      height: `${Math.random() * 60 + 20}px`,
+                      top: `${Math.random() * 100}%`,
+                      left: `${Math.random() * 100}%`,
+                      animationDuration: `${Math.random() * 4 + 3}s`,
+                    }}
+                  ></div>
+                ))}
+              </div>
             </Card>
           );
         })}
         
-        {currentLevel < 5 && (
+        {currentLevel < maxLevel && (
           <Card className="p-6 border-dashed border-2 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-400">Level {currentLevel + 1}</h3>
@@ -98,7 +131,7 @@ const QuizMenu = ({
 
       <div className="flex justify-center mt-8">
         <Link to="/leaderboard">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2 liquid-button">
             <Trophy className="h-4 w-4" />
             View Leaderboard
           </Button>

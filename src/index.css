@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 0 0% 94.5%;
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -27,48 +27,55 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
   
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 0 0% 8%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 0 0% 13%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 0 0% 13%;
     --popover-foreground: 0 0% 98%;
 
-    --muted: 240 3.7% 15.9%;
+    --muted: 0 0% 15%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 240 3.7% 15.9%;
+    --accent: 0 0% 15%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
     --ring: 240 4.9% 83.9%;
   }
  
   body {
     @apply bg-light text-dark dark:bg-dark dark:text-light transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
   }
 }
 
 @layer components {
   .quiz-option {
     @apply border-2 border-secondary rounded-lg p-4 cursor-pointer transition-all
-    hover:bg-secondary hover:text-dark hover:border-primary
-    dark:hover:bg-secondary/80;
+    hover:bg-secondary/20 hover:text-dark hover:border-primary
+    dark:hover:bg-secondary/10 relative overflow-hidden;
+  }
+  
+  .quiz-option:hover::after {
+    content: '';
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 
+    rounded-full bg-secondary/30 animate-ripple;
   }
 
   .quiz-option.correct {
-    @apply bg-green-100 border-green-500 dark:bg-green-900/30 dark:border-green-500/70;
+    @apply bg-secondary/20 border-secondary text-dark dark:bg-secondary/30 dark:border-secondary;
   }
 
   .quiz-option.incorrect {
@@ -85,5 +92,37 @@
   
   .glass {
     @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl dark:bg-black/10;
+  }
+  
+  .bubble-bg {
+    @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden;
+  }
+  
+  .bubble {
+    @apply absolute rounded-full bg-primary/5 animate-float;
+  }
+  
+  .bubble:nth-child(even) {
+    @apply bg-secondary/5 animate-float delay-1000;
+  }
+  
+  .liquid-button {
+    @apply relative overflow-hidden transition-all duration-300 hover:shadow-lg after:content-[''] after:absolute after:inset-0 after:bg-white/10 after:opacity-0 hover:after:opacity-100 after:transition-opacity;
+  }
+  
+  .ripple-effect {
+    @apply absolute rounded-full animate-ripple pointer-events-none bg-white/30;
+  }
+  
+  .confetti-piece {
+    @apply absolute w-2 h-6 animate-confetti;
+  }
+  
+  .confetti-piece:nth-child(odd) {
+    @apply bg-primary;
+  }
+  
+  .confetti-piece:nth-child(even) {
+    @apply bg-secondary;
   }
 }

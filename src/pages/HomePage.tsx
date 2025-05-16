@@ -64,18 +64,18 @@ export default function HomePage() {
     <Layout>
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <h1 className="text-5xl font-bold mb-6 animate-fade-in">
-          <span className="text-primary">Yo SuccinctStar</span>, <br />
-          <span className="text-dark">Think You Know Succinct?</span>
+          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">OptimumStar</span>, <br />
+          <span className="text-dark dark:text-light">Test Your Web3 Memory Skills!</span>
         </h1>
         
         <p className="text-xl mb-8 max-w-2xl animate-fade-in">
-          Test your knowledge of the Succinct protocol with our fun quiz! Advance through 5 increasingly challenging levels and compete with others on the leaderboard.
+          Test your knowledge of Optimum - the high-performance memory infrastructure for blockchains powered by RLNC technology! Advance through 5 increasingly challenging levels and compete with others on the leaderboard.
         </p>
         
         <Button 
           onClick={handleStartQuiz}
           size="lg"
-          className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 animate-fade-in"
+          className="bg-primary hover:bg-primary/90 text-light text-lg px-8 py-6 animate-fade-in liquid-button"
         >
           {loading || userLoading ? (
             "Loading..."
