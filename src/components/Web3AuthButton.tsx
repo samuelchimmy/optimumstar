@@ -4,6 +4,7 @@ import { useCombinedAuth } from '../contexts/CivicAuthContext';
 import { Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { UserButton } from '@civic/auth-web3/react';
+import { useAccount } from 'wagmi';
 
 interface Web3AuthButtonProps {
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link';
@@ -22,11 +23,13 @@ export default function Web3AuthButton({
     walletAddress, 
     walletBalance,
     walletBalanceSymbol,
-    isWalletConnected,
     createWallet, 
     connectWallet,
     isWalletCreating
   } = useCombinedAuth();
+  
+  // Use Wagmi hook for up-to-date connection status
+  const { isConnected } = useAccount();
   
   const [showDropdown, setShowDropdown] = useState(false);
   
@@ -58,7 +61,7 @@ export default function Web3AuthButton({
     );
   }
   
-  if (!isWalletConnected) {
+  if (!isConnected) {
     return (
       <Button
         variant={variant}

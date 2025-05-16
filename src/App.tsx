@@ -15,11 +15,12 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
-import { createConfig } from 'wagmi';
-import { http } from 'wagmi/transports';
+import { configureChains, createClient, WagmiConfig } from "wagmi";
 import { mainnet, optimism } from '@wagmi/chains';
+import { publicProvider } from 'wagmi/providers/public';
 import { CivicAuthProvider as CivicProviderOriginal, UserButton } from '@civic/auth-web3/react';
 import { CivicAuthProvider } from './contexts/CivicAuthContext';
+import { embeddedWallet } from "@civic/auth-web3/wagmi";
 
 // Document title
 document.title = "OptimumStar - Web3 Memory Quiz";
@@ -27,13 +28,19 @@ document.title = "OptimumStar - Web3 Memory Quiz";
 // Replace with your actual Civic client ID from the Civic Auth dashboard
 const CIVIC_CLIENT_ID = "51ad0041-3de6-4bd8-942b-faf90562ee64";
 
-// Create Wagmi config
-const wagmiConfig = createConfig({
-  chains: [mainnet, optimism],
-  transports: {
-    [mainnet.id]: http(),
-    [optimism.id]: http(), // Optimum is on Optimism chain
-  },
+// Configure chains & providers
+const { chains, provider } = configureChains(
+  [mainnet, optimism], // Optimum is on Optimism chain
+  [publicProvider()]
+);
+
+// Create wagmi client
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors: [
+    embeddedWallet()
+  ],
+  provider,
 });
 
 function App() {
@@ -43,28 +50,30 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <CivicProviderOriginal clientId={CIVIC_CLIENT_ID}>
-          <AuthProvider>
-            <CivicAuthProvider>
-              <BrowserRouter>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/quiz" element={<QuizPage />} />
-                    <Route path="/leaderboard" element={<LeaderboardPage />} />
-                    <Route path="/user/:userId" element={<UserProfilePage />} />
-                    <Route path="/terms" element={<TermsPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </TooltipProvider>
-              </BrowserRouter>
-            </CivicAuthProvider>
-          </AuthProvider>
-        </CivicProviderOriginal>
+        <WagmiConfig client={wagmiClient}>
+          <CivicProviderOriginal clientId={CIVIC_CLIENT_ID} initialChain={optimism}>
+            <AuthProvider>
+              <CivicAuthProvider>
+                <BrowserRouter>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/quiz" element={<QuizPage />} />
+                      <Route path="/leaderboard" element={<LeaderboardPage />} />
+                      <Route path="/user/:userId" element={<UserProfilePage />} />
+                      <Route path="/terms" element={<TermsPage />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </TooltipProvider>
+                </BrowserRouter>
+              </CivicAuthProvider>
+            </AuthProvider>
+          </CivicProviderOriginal>
+        </WagmiConfig>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser as useCivicUser } from '@civic/auth-web3/react';
 import { userHasWallet } from '@civic/auth-web3';
-import { useAccount } from 'wagmi';
+import { useAccount, useConnect, useBalance } from 'wagmi';
 import { useAuth as useSupabaseAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,7 +30,8 @@ const CivicAuthContext = createContext<CivicAuthContextProps | undefined>(undefi
 export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
   const { user: supabaseUser } = useSupabaseAuth();
   const civicUserContext = useCivicUser();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const { connect, connectors } = useConnect();
   const [isWalletCreating, setIsWalletCreating] = useState(false);
   
   // Determine if the user has a wallet
@@ -39,24 +40,19 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
   // Get wallet address if available
   const walletAddress = hasWallet ? civicUserContext.ethereum?.address : null;
   
-  // For simplicity, let's mock the balance data for now
-  const [walletBalance, setWalletBalance] = useState<string | null>(null);
-  const [walletBalanceSymbol, setWalletBalanceSymbol] = useState<string | null>("ETH");
+  // Use Wagmi's useBalance hook
+  const { data: balanceData } = useBalance({
+    address: address || walletAddress as `0x${string}` | undefined,
+    enabled: isConnected && !!walletAddress,
+  });
   
-  // Mock fetch balance function
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (walletAddress && isConnected) {
-        // This is a placeholder - in a real app, we'd fetch the actual balance
-        setWalletBalance("0.0000");
-      } else {
-        setWalletBalance(null);
-      }
-    };
+  // Extract balance values
+  const walletBalance = balanceData ? 
+    (Number(balanceData.formatted) < 0.0001 ? "0.0000" : balanceData.formatted) : 
+    null;
     
-    fetchBalance();
-  }, [walletAddress, isConnected]);
-
+  const walletBalanceSymbol = balanceData ? balanceData.symbol : "ETH";
+  
   // Action to create a new wallet
   const createWallet = async () => {
     if (!civicUserContext.user || hasWallet) return;
@@ -94,11 +90,25 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
     if (!hasWallet) return;
     
     try {
-      // For now, just simulate a successful connection
-      toast({
-        title: "Wallet Connected",
-        description: "Your Web3 wallet is now connected!",
-      });
+      // Find the Civic embedded wallet connector
+      const civicConnector = connectors.find(c => c.id === 'civic');
+      
+      if (civicConnector) {
+        await connect({ connector: civicConnector });
+        
+        toast({
+          title: "Wallet Connected",
+          description: "Your Web3 wallet is now connected!",
+        });
+      } else {
+        // Fallback to first connector if civic not found
+        await connect({ connector: connectors[0] });
+        
+        toast({
+          title: "Wallet Connected",
+          description: "Your Web3 wallet is now connected!",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Connection Failed",
