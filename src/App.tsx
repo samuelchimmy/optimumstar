@@ -15,8 +15,9 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
-import { WagmiProvider, createConfig, http } from 'wagmi';
-import { mainnet, optimism } from 'wagmi/chains';
+import { createConfig } from '@wagmi/core';
+import { http } from '@wagmi/core/transports';
+import { mainnet, optimism } from '@wagmi/chains';
 import { CivicAuthProvider as CivicProviderOriginal, UserButton } from '@civic/auth-web3/react';
 import { CivicAuthProvider } from './contexts/CivicAuthContext';
 
@@ -42,30 +43,28 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <WagmiProvider config={wagmiConfig}>
-          <CivicProviderOriginal clientId={CIVIC_CLIENT_ID}>
-            <AuthProvider>
-              <CivicAuthProvider>
-                <BrowserRouter>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                      <Route path="/quiz" element={<QuizPage />} />
-                      <Route path="/leaderboard" element={<LeaderboardPage />} />
-                      <Route path="/user/:userId" element={<UserProfilePage />} />
-                      <Route path="/terms" element={<TermsPage />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </TooltipProvider>
-                </BrowserRouter>
-              </CivicAuthProvider>
-            </AuthProvider>
-          </CivicProviderOriginal>
-        </WagmiProvider>
+        <CivicProviderOriginal clientId={CIVIC_CLIENT_ID}>
+          <AuthProvider>
+            <CivicAuthProvider>
+              <BrowserRouter>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/quiz" element={<QuizPage />} />
+                    <Route path="/leaderboard" element={<LeaderboardPage />} />
+                    <Route path="/user/:userId" element={<UserProfilePage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </TooltipProvider>
+              </BrowserRouter>
+            </CivicAuthProvider>
+          </AuthProvider>
+        </CivicProviderOriginal>
       </ThemeProvider>
     </QueryClientProvider>
   );
