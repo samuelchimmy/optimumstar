@@ -1,14 +1,14 @@
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/card';
 import { Card } from '@/components/ui/card';
-import { ArrowRight, Trophy, CheckCircle } from 'lucide-react';
+import { ArrowRight, Trophy, CheckCircle, LockIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface QuizMenuProps {
   currentLevel: number;
   totalScore: number;
   maxLevel: number;
-  completedLevels?: Record<number, number>;
+  completedLevels?: Record<string, any>;
   onStartLevel: (level: number) => void;
 }
 
@@ -25,10 +25,21 @@ const QuizMenu = ({
 
   // Function to get level completion status
   const getLevelStatus = (level: number) => {
-    const score = completedLevels[level] || 0;
-    if (score === 0) return "Not attempted";
-    if (score === 10) return "Perfect score!";
-    return `${score}/10 points`;
+    const levelData = completedLevels[level];
+    if (!levelData) return "Not attempted";
+    
+    // Check if level is completed
+    if (levelData.completed) {
+      return levelData.score === 10 ? "Perfect score!" : `${levelData.score}/10 points`;
+    }
+    
+    // Level in progress
+    return `In progress - Question ${levelData.lastQuestionIndex + 1}`;
+  };
+
+  // Function to check if a level is already completed
+  const isLevelCompleted = (level: number) => {
+    return !!completedLevels[level]?.completed;
   };
 
   return (
@@ -51,9 +62,12 @@ const QuizMenu = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {availableLevels.map(level => {
-          const isCompleted = (completedLevels[level] || 0) > 0;
-          const levelScore = completedLevels[level] || 0;
+          const levelData = completedLevels[level] || {};
+          const isCompleted = levelData.completed;
+          const levelScore = levelData.score || 0;
           const isPerfect = levelScore === 10;
+          const inProgress = !isCompleted && levelData.lastQuestionIndex > 0;
+          const lastQuestionIndex = levelData.lastQuestionIndex || 0;
           
           return (
             <Card 
@@ -63,9 +77,17 @@ const QuizMenu = ({
                   ? isPerfect 
                     ? 'border-secondary hover:border-secondary/80' 
                     : 'border-primary hover:border-primary/80' 
+                  : inProgress
+                  ? 'border-amber-400 hover:border-amber-500'
                   : 'hover:border-primary'
               } relative overflow-hidden group`}
-              onClick={() => onStartLevel(level)}
+              onClick={() => {
+                // Don't allow revisiting completed levels
+                if (isCompleted) {
+                  return;
+                }
+                onStartLevel(level);
+              }}
             >
               <div className="flex justify-between items-center relative z-10">
                 <div className="flex items-center gap-2">
@@ -77,18 +99,26 @@ const QuizMenu = ({
                     <CheckCircle className="h-5 w-5 text-primary" />
                   )}
                 </div>
-                <ArrowRight className={
-                  isCompleted 
-                    ? isPerfect 
-                      ? "text-secondary group-hover:translate-x-1 transition-transform" 
-                      : "text-primary group-hover:translate-x-1 transition-transform" 
-                    : "text-primary group-hover:translate-x-1 transition-transform"
-                } />
+                {isCompleted ? (
+                  <LockIcon className={
+                    isPerfect 
+                      ? "text-secondary" 
+                      : "text-primary"
+                  } />
+                ) : (
+                  <ArrowRight className={
+                    inProgress
+                      ? "text-amber-500 group-hover:translate-x-1 transition-transform" 
+                      : "text-primary group-hover:translate-x-1 transition-transform"
+                  } />
+                )}
               </div>
               <div className="mt-2 relative z-10">
                 <p className="text-gray-600 dark:text-gray-300">
                   {isCompleted 
-                    ? `Completed: ${levelScore}/10 points${levelScore === 10 ? ' (Perfect!)' : ''}` 
+                    ? `Completed: ${levelScore}/10 points${levelScore === 10 ? ' (Perfect!)' : ''}`
+                    : inProgress
+                    ? `In Progress - Question ${lastQuestionIndex + 1} of 10`
                     : level === currentLevel 
                       ? "Start this level" 
                       : "Review this level"
@@ -96,12 +126,30 @@ const QuizMenu = ({
                 </p>
               </div>
               
+              {/* Progress bar for in-progress levels */}
+              {inProgress && (
+                <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 mt-3 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-amber-400 h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${(lastQuestionIndex / 10) * 100}%` }}
+                  />
+                </div>
+              )}
+              
               {/* Background bubble effect that appears on hover */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div 
                     key={i}
-                    className={`absolute rounded-full ${isPerfect ? 'bg-secondary/10' : 'bg-primary/10'}`}
+                    className={`absolute rounded-full ${
+                      isCompleted
+                        ? isPerfect 
+                          ? 'bg-secondary/10' 
+                          : 'bg-primary/10'
+                        : inProgress 
+                        ? 'bg-amber-400/10' 
+                        : 'bg-primary/10'
+                    }`}
                     style={{
                       width: `${Math.random() * 60 + 20}px`,
                       height: `${Math.random() * 60 + 20}px`,
@@ -112,6 +160,16 @@ const QuizMenu = ({
                   ></div>
                 ))}
               </div>
+              
+              {/* Overlay for completed levels */}
+              {isCompleted && (
+                <div className="absolute inset-0 z-10 bg-gradient-to-r from-gray-900/20 to-gray-900/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="text-white text-center p-3 rounded-lg bg-gray-900/60">
+                    <LockIcon className="h-6 w-6 mx-auto mb-2" />
+                    <p>Level completed</p>
+                  </div>
+                </div>
+              )}
             </Card>
           );
         })}

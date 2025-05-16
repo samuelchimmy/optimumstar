@@ -9,9 +9,11 @@ import { CircleCheck, CircleX, ArrowRight } from 'lucide-react';
 interface QuizQuestionProps {
   question: QuizQuestionType;
   onAnswerSubmit: (isCorrect: boolean) => void;
+  questionIndex: number; // Added to track current question index
+  questionCount: number; // Added to show total questions
 }
 
-export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionProps) {
+export default function QuizQuestion({ question, onAnswerSubmit, questionIndex, questionCount }: QuizQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -99,6 +101,9 @@ export default function QuizQuestion({ question, onAnswerSubmit }: QuizQuestionP
     <Card className="w-full max-w-2xl bg-light animate-fade-in shadow-lg relative overflow-hidden">
       <CardContent className="pt-6">
         <div className="mb-6">
+          <div className="text-sm bg-primary/10 rounded-full px-3 py-1 dark:bg-primary/20 mb-2">
+            Question {questionIndex + 1} of {questionCount}
+          </div>
           <h3 className="text-xl font-semibold mb-2">{question.question}</h3>
         </div>
         

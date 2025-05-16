@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -49,6 +48,51 @@ export const fetchUserProgress = async (userId: string) => {
 };
 
 /**
+ * Saves the current question progress for a level
+ * @param userId The user ID
+ * @param level The current level
+ * @param questionIndex The current question index
+ * @param levelScore The current level score
+ * @param isLevelComplete Whether the level is completed
+ */
+export const saveQuestionProgress = async (
+  userId: string,
+  level: number,
+  questionIndex: number,
+  levelScore: number,
+  isLevelComplete: boolean
+) => {
+  try {
+    console.log('[saveQuestionProgress]', {
+      userId, level, questionIndex, levelScore, isLevelComplete
+    });
+
+    // Use the database function to update the completed_levels structure
+    const { data, error } = await supabase.rpc(
+      'update_completed_level_progress',
+      {
+        user_id: userId,
+        level_number: level,
+        question_index: questionIndex,
+        level_score: levelScore,
+        is_level_completed: isLevelComplete
+      }
+    );
+
+    if (error) {
+      console.error('[saveQuestionProgress] Error:', error);
+      return false;
+    }
+
+    console.log('[saveQuestionProgress] Updated progress:', data);
+    return true;
+  } catch (error) {
+    console.error('[saveQuestionProgress] Unexpected error:', error);
+    return false;
+  }
+};
+
+/**
  * Updates the user's quiz progress in the database
  * @param userId The ID of the user
  * @param newLevel The new level to update to (only if higher than current)
@@ -61,7 +105,7 @@ export const updateUserProgress = async (
   newLevel: number, 
   newScore: number,
   isComplete: boolean,
-  completedLevels: Record<number, number> = {}
+  completedLevels: Record<string, any> = {}
 ) => {
   try {
     console.log('[updateUserProgress] Updating user progress:');
@@ -130,24 +174,14 @@ export const updateUserProgress = async (
     // Only update level if new level is higher than current
     const updatedLevel = Math.max(existingProfile.current_level || 1, newLevel);
     
-    // Make sure to handle null/undefined completed_levels by providing a default empty object
-    const existingCompletedLevels = existingProfile.completed_levels || {};
-    
-    // Ensure existingCompletedLevels is treated as an object before spreading
-    const mergedCompletedLevels: Record<number, number> = 
-      typeof existingCompletedLevels === 'object' && existingCompletedLevels !== null
-        ? { ...existingCompletedLevels as Record<number, number> }
-        : {};
-    
-    // Update merged completed levels with new data
-    Object.entries(completedLevels).forEach(([level, score]) => {
-      const levelNum = parseInt(level);
-      const existingScore = mergedCompletedLevels[levelNum] || 0;
-      // Only update if new score is better
-      if (score > existingScore) {
-        mergedCompletedLevels[levelNum] = score;
-      }
-    });
+    // Update completed levels if provided
+    let updatedCompletedLevels = existingProfile.completed_levels;
+    if (Object.keys(completedLevels).length > 0) {
+      // Handle case where existing completed_levels might be null
+      const existingCompletedLevels = existingProfile.completed_levels || {};
+      
+      updatedCompletedLevels = { ...existingCompletedLevels, ...completedLevels };
+    }
     
     const { error: updateError } = await supabase
       .from('profiles')
@@ -155,7 +189,7 @@ export const updateUserProgress = async (
         current_level: updatedLevel,
         score: cappedScore,
         quiz_completed: isComplete,
-        completed_levels: mergedCompletedLevels,
+        completed_levels: updatedCompletedLevels,
         last_completed_at: new Date().toISOString()
       })
       .eq('id', userId);

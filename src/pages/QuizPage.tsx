@@ -24,8 +24,10 @@ const QuizPage = () => {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [totalScore, setTotalScore] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [completedLevels, setCompletedLevels] = useState<Record<number, number>>({});
+  const [completedLevels, setCompletedLevels] = useState<Record<string, any>>({});
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState<number>(0);
+  const [initialQuestionIndex, setInitialQuestionIndex] = useState(0);
   
   // Maximum level available in the quiz
   const MAX_LEVEL = 5;
@@ -85,8 +87,26 @@ const QuizPage = () => {
 
   // Start a level from the menu
   const handleStartLevel = (level: number) => {
+    // Check if level is already completed
+    if (completedLevels[level]?.completed) {
+      toast({
+        title: "Level Already Completed",
+        description: "You've already completed this level and cannot revisit it.",
+        variant: "warning",
+      });
+      return;
+    }
+    
+    setSelectedLevel(level);
     setIsStarted(true);
-    setCurrentLevel(level);
+    
+    // If level has been started but not completed, resume from last question
+    const levelData = completedLevels[level.toString()];
+    if (levelData && !levelData.completed && typeof levelData.lastQuestionIndex === 'number') {
+      setInitialQuestionIndex(levelData.lastQuestionIndex);
+    } else {
+      setInitialQuestionIndex(0);
+    }
   };
 
   // Handle quiz level completion
@@ -97,95 +117,82 @@ const QuizPage = () => {
     // Create a copy of completed levels
     const updatedCompletedLevels = { ...completedLevels };
 
-    // Check if this level was already completed
-    const previousScore = updatedCompletedLevels[levelCompleted] || 0;
-    
-    // Only update if the new score is better
-    if (standardizedLevelScore > previousScore) {
-      // Calculate the score difference to add to total
-      const scoreDifference = standardizedLevelScore - previousScore;
-      
-      // Update the completed level record
-      updatedCompletedLevels[levelCompleted] = standardizedLevelScore;
+    // Update to mark level as fully completed
+    updatedCompletedLevels[levelCompleted] = {
+      score: standardizedLevelScore,
+      completed: true,
+      lastQuestionIndex: 10 // Use 10 to indicate completion
+    };
 
-      // Calculate new total score by adding the difference
-      const newTotalScore = Math.min(totalScore + scoreDifference, MAX_TOTAL_SCORE);
-      setTotalScore(newTotalScore);
+    // Calculate total score across all levels
+    let newTotalScore = 0;
+    Object.values(updatedCompletedLevels).forEach((level: any) => {
+      if (level.score) {
+        newTotalScore += level.score;
+      }
+    });
+    
+    // Cap total score at MAX_TOTAL_SCORE
+    newTotalScore = Math.min(newTotalScore, MAX_TOTAL_SCORE);
+    setTotalScore(newTotalScore);
+    
+    // Calculate the next level
+    const nextLevel = Math.min(levelCompleted + 1, MAX_LEVEL);
+    
+    // Check if the entire quiz is completed
+    const isQuizCompleted = levelCompleted === MAX_LEVEL;
+    
+    if (isQuizCompleted) {
+      // Update the database to mark quiz as completed
+      const success = await updateUserProgress(user.id, nextLevel, newTotalScore, true, updatedCompletedLevels);
       
-      // Calculate the next level
-      const nextLevel = Math.min(levelCompleted + 1, MAX_LEVEL);
-      
-      // Check if the entire quiz is completed
-      const isQuizCompleted = levelCompleted === MAX_LEVEL;
-      
-      if (isQuizCompleted) {
-        // Update the database to mark quiz as completed
-        const success = await updateUserProgress(user.id, nextLevel, newTotalScore, true, updatedCompletedLevels);
+      if (success) {
+        setQuizCompleted(true);
+        toast({
+          title: "Congratulations!",
+          description: "You've completed all levels of the quiz! You'll be redirected to the home page.",
+          duration: 5000,
+        });
         
-        if (success) {
-          setQuizCompleted(true);
-          toast({
-            title: "Congratulations!",
-            description: "You've completed all levels of the quiz! You'll be redirected to the home page.",
-            duration: 5000,
-          });
-          
-          // Update local state
-          setCompletedLevels(updatedCompletedLevels);
-          
-          // Redirect to home page after a short delay
-          setTimeout(() => {
-            navigate('/');
-          }, 3000);
-        } else {
-          toast({
-            title: "Warning",
-            description: "Could not save your final score. Please try again.",
-            variant: "destructive"
-          });
-        }
+        // Update local state
+        setCompletedLevels(updatedCompletedLevels);
+        
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
       } else {
-        // Update next level in the database without advancing automatically
-        console.log(`Level ${levelCompleted} completed - updating next level (${nextLevel}) and score in database`);
-        const success = await updateUserProgress(user.id, nextLevel, newTotalScore, false, updatedCompletedLevels);
-        
-        if (success) {
-          // Update local state
-          setCompletedLevels(updatedCompletedLevels);
-          setCurrentLevel(nextLevel);
-          
-          // Show a toast confirmation
-          let toastMessage = `Level ${levelCompleted} completed with ${standardizedLevelScore}/10 points!`;
-          
-          if (previousScore > 0) {
-            toastMessage += ` You improved by ${scoreDifference} points!`;
-          }
-          
-          toast({
-            title: "Progress Saved",
-            description: toastMessage,
-            duration: 5000,
-          });
-        } else {
-          toast({
-            title: "Warning",
-            description: "Could not save your progress. Your current level may not be remembered.",
-            variant: "destructive"
-          });
-        }
-        
-        // Don't automatically start the next level - user will need to start from menu
-        setIsStarted(false);
+        toast({
+          title: "Warning",
+          description: "Could not save your final score. Please try again.",
+          variant: "destructive"
+        });
       }
     } else {
-      // Score didn't improve
-      toast({
-        title: "Level Completed",
-        description: `You scored ${standardizedLevelScore}/10, but your previous best was ${previousScore}/10. Keep practicing!`,
-        duration: 5000,
-      });
+      // Update next level in the database without advancing automatically
+      console.log(`Level ${levelCompleted} completed - updating next level (${nextLevel}) and score in database`);
+      const success = await updateUserProgress(user.id, nextLevel, newTotalScore, false, updatedCompletedLevels);
       
-      // Return to menu without updating score
+      if (success) {
+        // Update local state
+        setCompletedLevels(updatedCompletedLevels);
+        setCurrentLevel(nextLevel);
+        
+        // Show a toast confirmation
+        toast({
+          title: "Progress Saved",
+          description: `Level ${levelCompleted} completed with ${standardizedLevelScore}/10 points!`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Warning",
+          description: "Could not save your progress. Your current level may not be remembered.",
+          variant: "destructive"
+        });
+      }
+      
+      // Don't automatically start the next level - user will need to start from menu
       setIsStarted(false);
     }
   };
@@ -207,8 +214,10 @@ const QuizPage = () => {
           </div>
         ) : isStarted ? (
           <QuizLevel 
-            level={currentLevel} 
+            level={selectedLevel} 
             onComplete={handleLevelComplete}
+            initialQuestionIndex={initialQuestionIndex}
+            isLevelCompleted={completedLevels[selectedLevel]?.completed}
           />
         ) : (
           <QuizMenu

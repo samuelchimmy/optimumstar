@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -27,6 +28,17 @@ export interface QuizQuestion {
   options: string[];
   correct_answer: number;
   level: number;
+  originalCorrectIndex?: number; // Added to track original index
+}
+
+// Helper function to shuffle an array
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 // Improved function to fetch user profiles with better error handling
@@ -461,5 +473,34 @@ export async function fetchQuestions(level: number): Promise<QuizQuestion[]> {
     console.warn(`WARNING: No questions found for level ${level}!`);
   }
   
-  return levelQuestions;
+  // Randomize options for each question
+  return levelQuestions.map(question => {
+    // Save the original correct answer index
+    const originalCorrectIndex = question.correct_answer;
+    
+    // Create option objects with original indices to track them
+    const optionsWithIndices = question.options.map((option, index) => ({
+      text: option,
+      originalIndex: index
+    }));
+    
+    // Shuffle the options
+    const shuffledOptionsWithIndices = shuffleArray(optionsWithIndices);
+    
+    // Extract just the text for the final options array
+    const shuffledOptions = shuffledOptionsWithIndices.map(opt => opt.text);
+    
+    // Find the new position of the correct answer
+    const newCorrectIndex = shuffledOptionsWithIndices.findIndex(
+      opt => opt.originalIndex === originalCorrectIndex
+    );
+    
+    // Return the updated question with shuffled options
+    return {
+      ...question,
+      options: shuffledOptions,
+      correct_answer: newCorrectIndex,
+      originalCorrectIndex // Keep track of the original index just in case
+    };
+  });
 }

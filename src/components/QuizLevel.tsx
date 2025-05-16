@@ -8,15 +8,23 @@ import { toast } from '@/components/ui/use-toast';
 import { Trophy, Star, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Confetti from './Confetti';
+import { saveQuestionProgress } from '../services/quizProgressService';
 
 interface QuizLevelProps {
   level: number;
   onComplete: (level: number, score: number, isPerfectScore: boolean) => void;
+  initialQuestionIndex?: number;
+  isLevelCompleted?: boolean;
 }
 
-export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
+export default function QuizLevel({ 
+  level, 
+  onComplete,
+  initialQuestionIndex = 0, 
+  isLevelCompleted = false
+}: QuizLevelProps) {
   const [questions, setQuestions] = useState<any[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialQuestionIndex);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
@@ -25,12 +33,31 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // If level is already completed, show the completion screen immediately
+  useEffect(() => {
+    if (isLevelCompleted) {
+      setCompleted(true);
+      // Assume perfect score if we don't have the actual data
+      setPerfectScore(true);
+    }
+  }, [isLevelCompleted]);
+
   useEffect(() => {
     const loadQuestions = async () => {
+      // Don't load questions if level is already completed
+      if (isLevelCompleted) {
+        setLoading(false);
+        return;
+      }
+      
       console.log(`Loading questions for level ${level}...`);
       setLoading(true);
-      setCurrentQuestionIndex(0); // Reset question index when level changes
-      setCorrectAnswers(0); // Reset correct answers when level changes
+      
+      // Don't reset the question index when resuming progress
+      if (initialQuestionIndex === 0) {
+        setCurrentQuestionIndex(0); // Reset question index when level changes
+        setCorrectAnswers(0); // Reset correct answers when level changes
+      }
       
       try {
         const levelQuestions = await fetchQuestions(level);
@@ -60,15 +87,19 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     };
     
     loadQuestions();
-  }, [level]);
+  }, [level, initialQuestionIndex, isLevelCompleted]);
 
-  const handleAnswerSubmit = (isCorrect: boolean) => {
+  const handleAnswerSubmit = async (isCorrect: boolean) => {
+    // Don't process answers if level is already completed
+    if (isLevelCompleted) return;
+    
     // Log for debugging
     console.log(`Answer submitted for question ${currentQuestionIndex + 1}: ${isCorrect ? 'correct' : 'incorrect'}`);
     
     // Track correct answers only when the answer is correct
+    let newCorrectAnswers = correctAnswers;
     if (isCorrect) {
-      const newCorrectAnswers = correctAnswers + 1;
+      newCorrectAnswers = correctAnswers + 1;
       console.log(`Incrementing score from ${correctAnswers} to ${newCorrectAnswers}`);
       setCorrectAnswers(newCorrectAnswers);
       
@@ -80,18 +111,42 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
     
     // Move to next question regardless of correct/incorrect
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // Update to the next question
+      const nextQuestionIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextQuestionIndex);
+      
+      // Save progress to database with each question answered
+      if (user) {
+        await saveQuestionProgress(
+          user.id,
+          level,
+          nextQuestionIndex,
+          newCorrectAnswers,
+          false // Level not yet completed
+        );
+      }
     } else {
       // Level completed - show the score for this level
       setCompleted(true);
       
-      // Calculate final score including the last answer
-      const finalScore = isCorrect ? correctAnswers + 1 : correctAnswers;
+      // Calculate final score
+      const finalScore = isCorrect ? newCorrectAnswers : newCorrectAnswers;
       console.log(`Level ${level} completed with final score: ${finalScore}/${questions.length}`);
       
       // Check if user got a perfect score
       const isPerfect = finalScore === questions.length;
       setPerfectScore(isPerfect);
+      
+      // Save completion status to database
+      if (user) {
+        await saveQuestionProgress(
+          user.id,
+          level,
+          questions.length, // All questions completed
+          finalScore,
+          true // Level is now completed
+        );
+      }
       
       // Play celebration music
       const audio = new Audio("/celebration.mp3");
@@ -221,9 +276,6 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       <div className="w-full max-w-2xl mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Level {level}</h2>
-          <div className="text-sm bg-primary/10 rounded-full px-3 py-1 dark:bg-primary/20">
-            Question {currentQuestionIndex + 1} of {questions.length}
-          </div>
         </div>
         
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-6 overflow-hidden relative">
@@ -250,7 +302,9 @@ export default function QuizLevel({ level, onComplete }: QuizLevelProps) {
       {questions.length > 0 && (
         <QuizQuestion 
           question={questions[currentQuestionIndex]} 
-          onAnswerSubmit={handleAnswerSubmit} 
+          onAnswerSubmit={handleAnswerSubmit}
+          questionIndex={currentQuestionIndex}
+          questionCount={questions.length}
         />
       )}
     </div>

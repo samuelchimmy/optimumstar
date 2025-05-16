@@ -56,7 +56,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_completed_level_progress: {
+        Args: {
+          user_id: string
+          level_number: number
+          question_index: number
+          level_score: number
+          is_level_completed: boolean
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
