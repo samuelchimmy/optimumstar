@@ -7,7 +7,6 @@ import { Copy, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import BubbleBackground from './BubbleBackground';
-import Web3AuthButton from './Web3AuthButton';
 
 interface LayoutProps {
   children: ReactNode;
@@ -68,10 +67,6 @@ export default function Layout({ children }: LayoutProps) {
                 <Link to="/profile" className="hover:text-secondary transition-colors">
                   Profile
                 </Link>
-                <Web3AuthButton 
-                  variant="outline" 
-                  className="text-light border-light hover:bg-primary hover:text-light dark:border-light/70 liquid-button"
-                />
                 <Button 
                   variant="outline" 
                   onClick={signOut}
