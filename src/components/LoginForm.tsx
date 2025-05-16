@@ -7,7 +7,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LoginForm() {
   const { signInWithEmail, signUpWithEmail } = useAuth();
@@ -52,7 +51,7 @@ export default function LoginForm() {
   return (
     <Card className="w-[350px] shadow-lg border border-secondary/30">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome to SuccinctStar</CardTitle>
+        <CardTitle className="text-2xl font-bold">Welcome to OptimumStar</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-center text-gray-600 mb-4">
