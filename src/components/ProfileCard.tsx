@@ -1,11 +1,11 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Twitter, MessageSquare, Loader2 } from 'lucide-react';
+import { Twitter, MessageSquare, Loader2, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCombinedAuth } from '../contexts/CivicAuthContext';
 import { UserProfile } from '../lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,10 +18,20 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ onEdit, editable = false, loading = false }: ProfileCardProps) {
   const { user } = useAuth();
+  const { 
+    hasWallet, 
+    walletAddress, 
+    walletBalance, 
+    walletBalanceSymbol, 
+    isWalletConnected,
+    createWallet,
+    connectWallet,
+    isWalletCreating
+  } = useCombinedAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(loading);
   const [error, setError] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // Add a refresh key for state-based refreshes
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -83,7 +93,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
     if (!loading && user) {
       loadUserProfile();
     }
-  }, [user, loading, refreshKey]); // Add refreshKey to dependencies
+  }, [user, loading, refreshKey]);
 
   if (loading || profileLoading) {
     return (
@@ -115,7 +125,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
               onClick={() => {
                 setProfileLoading(true);
                 setError(false);
-                setRefreshKey(prev => prev + 1); // Increment refresh key to trigger reload
+                setRefreshKey(prev => prev + 1);
               }}
               className="mr-2"
             >
@@ -124,7 +134,7 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
             <Button 
               variant="outline" 
               onClick={() => {
-                setRefreshKey(prev => prev + 1); // Increment refresh key instead of reloading page
+                setRefreshKey(prev => prev + 1);
               }}
             >
               Refresh Profile
@@ -136,6 +146,11 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
   }
 
   const levelProgress = ((profile.current_level || 1) - 1) / 5 * 100;
+
+  // Truncate wallet address for display
+  const truncatedAddress = walletAddress 
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : null;
 
   return (
     <Card className="w-full max-w-md mx-auto border border-secondary/30 shadow-lg">
@@ -166,6 +181,52 @@ export default function ProfileCard({ onEdit, editable = false, loading = false 
           </Avatar>
           
           <h2 className="text-2xl font-bold">{profile.username || 'Anonymous User'}</h2>
+          
+          {/* Web3 Wallet Section */}
+          <div className="w-full bg-muted/30 rounded-lg p-4 space-y-2">
+            <h3 className="text-md font-semibold flex items-center">
+              <Wallet className="mr-2 h-4 w-4" />
+              Web3 Wallet
+            </h3>
+            
+            {!hasWallet ? (
+              <div className="flex flex-col items-center space-y-2">
+                <p className="text-sm text-muted-foreground">No Web3 wallet connected</p>
+                <Button 
+                  size="sm"
+                  onClick={() => createWallet()}
+                  disabled={isWalletCreating}
+                >
+                  {isWalletCreating ? "Creating..." : "Create Wallet"}
+                </Button>
+              </div>
+            ) : !isWalletConnected ? (
+              <div className="flex flex-col items-center space-y-2">
+                <p className="text-sm text-muted-foreground">Wallet not connected</p>
+                <Button 
+                  size="sm"
+                  onClick={() => connectWallet()}
+                >
+                  Connect Wallet
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Address</span>
+                  <span className="text-sm font-mono">{truncatedAddress}</span>
+                </div>
+                {walletBalance && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Balance</span>
+                    <span className="text-sm font-medium">
+                      {walletBalance} {walletBalanceSymbol}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           
           {/* Social Links */}
           <div className="flex gap-4">
