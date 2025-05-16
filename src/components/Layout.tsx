@@ -39,7 +39,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="font-bold text-xl flex items-center">
             <img 
-              src="/lovable-uploads/a5aeb46a-0e4e-4bf3-a94c-3d441c1ef3d1.png" 
+              src="/lovable-uploads/38b19256-c906-457a-b514-f74388554713.png" 
               alt="Optimum Logo" 
               className="h-8 w-auto mr-2" 
             />
