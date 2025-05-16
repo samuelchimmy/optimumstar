@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useCombinedAuth } from '../contexts/CivicAuthContext';
 import { Wallet } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UserButton } from '@civic/auth-web3/react';
 
 interface Web3AuthButtonProps {

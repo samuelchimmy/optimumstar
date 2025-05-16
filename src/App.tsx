@@ -17,14 +17,14 @@ import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { mainnet, optimism } from 'wagmi/chains';
-import { embeddedWallet } from '@civic/auth-web3';
-import { CivicAuthProvider as CivicProviderOriginal } from '@civic/auth-web3/react';
+import { CivicAuthProvider as CivicProviderOriginal, UserButton } from '@civic/auth-web3/react';
 import { CivicAuthProvider } from './contexts/CivicAuthContext';
 
 // Document title
 document.title = "OptimumStar - Web3 Memory Quiz";
 
-const CIVIC_CLIENT_ID = "civic-client-id"; // Replace with your actual Civic client ID
+// Replace with your actual Civic client ID from the Civic Auth dashboard
+const CIVIC_CLIENT_ID = "51ad0041-3de6-4bd8-942b-faf90562ee64";
 
 // Create Wagmi config
 const wagmiConfig = createConfig({
@@ -33,9 +33,6 @@ const wagmiConfig = createConfig({
     [mainnet.id]: http(),
     [optimism.id]: http(), // Optimum is on Optimism chain
   },
-  connectors: [
-    embeddedWallet(),
-  ],
 });
 
 function App() {

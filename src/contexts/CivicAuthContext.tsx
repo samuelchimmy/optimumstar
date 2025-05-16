@@ -9,7 +9,7 @@ import { toast } from '@/hooks/use-toast';
 interface CivicAuthContextProps {
   // Supabase auth (existing)
   isSupabaseAuthenticated: boolean;
-  supbaseUser: any;
+  supabaseUser: any;
   // Civic auth
   isCivicAuthenticated: boolean;
   civicUser: any;
@@ -58,13 +58,20 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setIsWalletCreating(true);
-      await civicUserContext.createWallet();
-      toast({
-        title: "Wallet Created",
-        description: "Your Web3 wallet has been created successfully!",
-      });
-      // Auto-connect after creating
-      await connectWallet();
+      
+      // Check if createWallet is available on the context
+      if ('createWallet' in civicUserContext) {
+        await (civicUserContext as any).createWallet();
+        
+        toast({
+          title: "Wallet Created",
+          description: "Your Web3 wallet has been created successfully!",
+        });
+        // Auto-connect after creating
+        await connectWallet();
+      } else {
+        throw new Error("Wallet creation function is not available");
+      }
     } catch (error: any) {
       toast({
         title: "Wallet Creation Failed",
@@ -104,7 +111,7 @@ export function CivicAuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     // Supabase auth
     isSupabaseAuthenticated: !!supabaseUser,
-    supbaseUser,
+    supabaseUser,
     // Civic auth
     isCivicAuthenticated: !!civicUserContext.user,
     civicUser: civicUserContext.user,
