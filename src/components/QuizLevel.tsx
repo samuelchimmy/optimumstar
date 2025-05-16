@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import QuizQuestion from './QuizQuestion';
@@ -202,7 +201,7 @@ export default function QuizLevel({
   }
 
   if (completed) {
-    // Calculate final level score correctly
+    // Calculate final level score correctly - this is the number of correct answers (0-10)
     const finalLevelScore = correctAnswers;
     const isPerfectScore = finalLevelScore === questions.length;
     
@@ -219,6 +218,14 @@ export default function QuizLevel({
           Your Score: <span className={`font-bold ${isPerfectScore ? 'text-secondary' : 'text-primary'}`}>
             {finalLevelScore} / {questions.length}
           </span>
+        </p>
+        
+        {/* Add explanation about scoring */}
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+          {finalLevelScore === questions.length ? 
+            'Perfect score! You answered all questions correctly.' : 
+            `You answered ${finalLevelScore} out of ${questions.length} questions correctly.`
+          }
         </p>
         
         {isPerfectScore && (

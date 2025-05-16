@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -247,11 +246,17 @@ export const calculateLevelScore = (
 
 /**
  * Calculate a standardized score that maps to a 0-10 range per level
+ * Updated to be directly proportional to correct answers (1 correct = 1 point)
  */
-export const calculateStandardizedScore = (score: number) => {
-  // Assuming the maximum score per level is 1500 (10 questions × 100 points + 500 perfect bonus)
-  // Map it to a 0-10 scale
-  return Math.min(Math.round(score / 150), 10);
+export const calculateStandardizedScore = (score: number, totalQuestions: number = 10) => {
+  // Calculate how many correct answers the user got
+  // Raw score formula: correctAnswers * 100 + perfectBonus + timeBonus
+  // First, extract just the base score component (ignoring bonuses)
+  const baseScoreComponent = Math.min(score, totalQuestions * 100);
+  const correctAnswers = Math.round(baseScoreComponent / 100);
+  
+  // Direct mapping: Each correct answer is worth 1 point on the standardized scale
+  return correctAnswers;
 };
 
 /**
