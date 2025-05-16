@@ -130,9 +130,14 @@ export const updateUserProgress = async (
     // Only update level if new level is higher than current
     const updatedLevel = Math.max(existingProfile.current_level || 1, newLevel);
     
-    // Merge completed levels
+    // Make sure to handle null/undefined completed_levels by providing a default empty object
     const existingCompletedLevels = existingProfile.completed_levels || {};
-    const mergedCompletedLevels = { ...existingCompletedLevels };
+    
+    // Ensure existingCompletedLevels is treated as an object before spreading
+    const mergedCompletedLevels: Record<number, number> = 
+      typeof existingCompletedLevels === 'object' && existingCompletedLevels !== null
+        ? { ...existingCompletedLevels as Record<number, number> }
+        : {};
     
     // Update merged completed levels with new data
     Object.entries(completedLevels).forEach(([level, score]) => {
