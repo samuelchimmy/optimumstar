@@ -64,6 +64,38 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
   const handleRowClick = (userId: string) => {
     navigate(`/user/${userId}`);
   };
+
+  // Function to render the rank cell with appropriate content
+  const renderRankCell = (index: number) => {
+    // Always show the numerical rank for clarity
+    const rankNumber = index + 1;
+    
+    // For top 3, show both trophy and number
+    if (index === 0) {
+      return (
+        <span className="flex items-center gap-1">
+          <Trophy className="text-yellow-500 h-4 w-4" />
+          <span className="font-mono">{rankNumber}</span>
+        </span>
+      );
+    } else if (index === 1) {
+      return (
+        <span className="flex items-center gap-1">
+          <Trophy className="text-gray-400 h-4 w-4" />
+          <span className="font-mono">{rankNumber}</span>
+        </span>
+      );
+    } else if (index === 2) {
+      return (
+        <span className="flex items-center gap-1">
+          <Trophy className="text-amber-600 h-4 w-4" />
+          <span className="font-mono">{rankNumber}</span>
+        </span>
+      );
+    }
+    // For all others, show just the number with consistent formatting
+    return <span className="font-mono">#{rankNumber}</span>;
+  };
   
   if (loading) {
     return (
@@ -113,11 +145,8 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
                   ${isCurrentUser ? 'bg-primary/5' : ''}`}
                 onClick={() => handleRowClick(user.id)}
               >
-                <TableCell className="font-mono">
-                  {index === 0 && <Trophy className="inline mr-1 text-yellow-500 h-4 w-4" />}
-                  {index === 1 && <Trophy className="inline mr-1 text-gray-400 h-4 w-4" />}
-                  {index === 2 && <Trophy className="inline mr-1 text-amber-600 h-4 w-4" />}
-                  {index > 2 && `#${index + 1}`}
+                <TableCell>
+                  {renderRankCell(index)}
                 </TableCell>
                 <TableCell className="font-semibold">
                   {user.username || 'Anonymous'}
