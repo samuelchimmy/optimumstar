@@ -1,6 +1,8 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
+import { QuizQuestion } from '../data/quizQuestions';
 
 // Import the supabase client from the integrations folder
 import { supabase } from '@/integrations/supabase/client';

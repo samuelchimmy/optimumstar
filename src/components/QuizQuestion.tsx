@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { QuizQuestion as QuizQuestionType } from '../lib/supabase';
+import { QuizQuestion as QuizQuestionType } from '../data/quizQuestions';
 import { toast } from '@/hooks/use-toast';
 import { CircleCheck, CircleX, ArrowRight } from 'lucide-react';
 
