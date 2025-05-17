@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { quizQuestions } from '../data/quizQuestions';
@@ -20,15 +19,6 @@ export interface UserProfile {
   quiz_completed?: boolean | null;
   last_completed_at?: string | null;
   completed_levels?: any | null; // Added this field which was missing in our migration
-}
-
-export interface QuizQuestion {
-  id: string | number;
-  question: string;
-  options: string[];
-  correct_answer: number;
-  level: number;
-  originalCorrectIndex?: number; // Added to track original index
 }
 
 // Helper function to shuffle an array
@@ -410,8 +400,8 @@ export async function getLeaderboard(): Promise<UserProfile[]> {
       .from('profiles')
       .select('*')
       .order('score', { ascending: false })
-      .order('last_completed_at', { ascending: true }) // For tie-breaking - earliest completion time wins
-      .limit(10);
+      .order('last_completed_at', { ascending: true }); // For tie-breaking - earliest completion time wins
+      // Removed the .limit(10) to show all users
     
     if (error) {
       console.error('Error fetching leaderboard:', error);
