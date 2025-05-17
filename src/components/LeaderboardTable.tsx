@@ -60,11 +60,9 @@ export default function LeaderboardTable({ currentUserId }: LeaderboardTableProp
     getLeaderboardData();
   }, []);
   
-  // Function to handle clicking on a user row
+  // Function to handle clicking on a user row - modified to work for all users
   const handleRowClick = (userId: string) => {
-    if (currentUserId) { // Only navigate if user is logged in
-      navigate(`/user/${userId}`);
-    }
+    navigate(`/user/${userId}`);
   };
   
   if (loading) {

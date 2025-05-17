@@ -45,11 +45,9 @@ export default function LeaderboardPage() {
         <p className="text-center text-gray-600 mb-2">
           Can you make it to the top? Complete more levels to climb the ranks!
         </p>
-        {user && (
-          <p className="text-center text-gray-600 mb-6">
-            Click on any player to view their detailed profile.
-          </p>
-        )}
+        <p className="text-center text-gray-600 mb-6">
+          Click on any player to view their detailed profile.
+        </p>
         
         {loading ? (
           <div className="text-center mb-6">
